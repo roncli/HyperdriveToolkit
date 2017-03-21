@@ -1,0 +1,51 @@
+{
+    "name": "HyperdriveToolkit",
+    "version": "0.0.1",
+    "description": "A collection of tools designed to empower streamers to easily create advanced content for their streams and better manage their community.",
+    "homepage": "https://github.com/roncli/HyperdriveToolkit",
+    "bugs": {
+        "url": "https://github.com/roncli/HyperdriveToolkit/issues",
+        "email": "roncli@roncli.com"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Ronald M. Clifford",
+        "email": "roncli@roncli.com",
+        "url": "http://www.roncli.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/roncli/HyperdriveToolkit.git"
+    },
+    "devDependencies": {
+        "electron-builder": "15.6.2",
+        "electron": "1.6.2"
+    },
+    "engines": {
+        "node": ">=7.0.0"
+    },
+    "productName": "HyperdriveToolkit",
+    "build": {
+        "appId": "com.electron.hyperdrivetoolkit",
+        "copyright": "©2017 roncli Productions",
+        "productName": "HyperdriveToolkit",
+        "compression": "maximum",
+        "nsis": {
+            "oneClick": false,
+            "perMachine": true,
+            "allowToChangeInstallationDirectory": true,
+            "runAfterFinish": false,
+            "installerIcon": "logo/logo.ico"
+        },
+        "win": {
+            "icon": "logo/logo.ico --TODO"
+        },
+        "mac": {
+            "icon": "logo/logo.icns --TODO"
+        }
+    },
+    "scripts": {
+        "pack": "node_modules/.bin/build --dir",
+        "dist": "node_modules/.bin/build"
+    }
+}
