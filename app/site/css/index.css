@@ -1,0 +1,27 @@
+body {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+#menu {
+
+}
+
+#channels {
+
+}
+
+#display {
+    flex-grow: 1;
+}
+
+#input {
+
+}
+
+#inputbox {
+    width: 100%;
+    height: 1.2em;
+}

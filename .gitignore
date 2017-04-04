@@ -41,3 +41,6 @@ jspm_packages
 
 # Electron
 dist
+
+# Settings
+settings.js
