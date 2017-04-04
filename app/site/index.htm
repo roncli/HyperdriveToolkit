@@ -12,20 +12,17 @@
         <div id="menu">Menu</div>
         <div id="channels">
             <ul class="nav nav-tabs">
-                <li><a data-toggle="tab" href="#roncli">#roncli</a>
+                <li><a data-toggle="tab" href="#channel-roncli">#roncli</a>
             </ul>
         </div>
-        <div id="display">
-<!--
-            HTML for each channel:
-            <div id="channel">
-                <div id="chat">
+        <div id="display" class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="channel-roncli">
+                <div class="chat" id="chat">
                     <div id="topic"></div>
                     <div id="text"></div>
                 </div>
-                <div id="users"></div>
+                <div class="users" id="users"></div>
             </div>
--->
         </div>
         <div id="input">
             <input type="text" id="inputbox" />

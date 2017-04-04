@@ -1,5 +1,5 @@
-var electron = require("electron"),
-    Chat = require("../../../base/chat"),
+var Chat = require("../../../js/base/chat"),
+    electron = require("electron"),
     Tmi = require("tmi.js"),
     TwitchApi = require("twitch-api");
 
@@ -38,12 +38,41 @@ class Twitch extends Chat {
 
             twitch.tmi = new Tmi.client(settings);
 
+            // TODO: See what events we want to forward. https://docs.tmijs.org/v1.1.2/Events.html#join
+
             twitch.tmi.on("connected", (address, port) => {
                 twitch.emit("connected", address, port);
             });
 
+            twitch.tmi.on("disconnected", (message) => {
+                twitch.emit("disconnected", message);
+                console.log("DISCONNECTED", message);
+                // TODO: Something when chat disconnects.
+                // tmi.disconnect().then(function() {
+                //     tmiConnect();
+                // }).catch(function() {
+                //     tmiConnect();
+                // });
+            });
+
             twitch.tmi.on("message", (channel, userstate, text, self) => {
                 twitch.emit("message", channel, userstate.username, userstate["display-name"], text);
+            });
+
+            twitch.tmi.on("join", (channel, username, self) => {
+                twitch.emit("join", channel, username, self);
+            });
+
+            twitch.tmi.on("part", (channel, username, self) => {
+                twitch.emit("part", channel, username, self);
+            });
+
+            twitch.tmi.on("mod", (channel, username) => {
+                twitch.emit("mod", channel, username);
+            });
+
+            twitch.tmi.on("unmod", (channel, username) => {
+                twitch.emit("unmod", channel, username);
             });
 
             twitch.tmi.connect().then(() => {
@@ -89,6 +118,14 @@ class Twitch extends Chat {
 
             electron.shell.openExternal(api.getAuthorizationUrl().replace("response_type=code", "response_type=token") + "&force_verify=true");
         });
+    }
+
+    join(channel) {
+        this.tmi.join(channel);
+    }
+
+    part(channel) {
+        this.tmi.part(channel);
     }
 }
 

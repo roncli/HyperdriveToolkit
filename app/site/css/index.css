@@ -17,6 +17,20 @@ body {
     flex-grow: 1;
 }
 
+#display > .tab-pane {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+#display > .tab-pane > .chat {
+    flex-grow: 1;
+}
+
+#display > .tab-pane > .users {
+    width: 100px;
+}
+
 #input {
 
 }
