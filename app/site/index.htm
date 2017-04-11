@@ -1,28 +1,18 @@
 <html>
     <head>
-        <script src="js/index.js"></script>
         <script src="../node_modules/jquery/dist/jquery.min.js"></script>
         <script>$ = jQuery = require("jquery")</script>
         <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="js/index.js"></script>
         <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"></link>
         <link href="../node_modules/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet"></link>
-        <link href="css/index.css" rel="stylesheet"></script>
+        <link href="css/index.css" rel="stylesheet"></link>
     </head>
     <body>
         <div id="menu">Menu</div>
-        <div id="channels">
-            <ul class="nav nav-tabs">
-                <li><a data-toggle="tab" href="#channel-roncli">#roncli</a>
-            </ul>
-        </div>
-        <div id="display" class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="channel-roncli">
-                <div class="chat" id="chat">
-                    <div id="topic"></div>
-                    <div id="text"></div>
-                </div>
-                <div class="users" id="users"></div>
-            </div>
+        <ul id="channels" class="nav nav-tabs">
+        </ul>
+        <div id="display" class="tab-content panel">
         </div>
         <div id="input">
             <input type="text" id="inputbox" />

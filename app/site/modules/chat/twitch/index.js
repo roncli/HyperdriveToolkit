@@ -1,8 +1,8 @@
-var Chat = require("../../../js/base/chat"),
-    electron = require("electron"),
+var electron = require("electron"),
     Tmi = require("tmi.js"),
-    TwitchApi = require("twitch-api");
-
+    TwitchApi = require("twitch-api"),
+    Chat = require("../../../js/base/chat");
+    
 class Twitch extends Chat {
     constructor (settings) {
         super();
@@ -13,7 +13,7 @@ class Twitch extends Chat {
     }
 
     get connected() {
-        // TODO: Return whether or not we're connected to TMI.
+        return this.tmi.readyState() === "OPEN";
     }
 
     connect() {
@@ -34,7 +34,10 @@ class Twitch extends Chat {
             }
 
             settings = twitch.settings.tmi;
-            settings.identity.password = `oauth:${twitch.accessToken}`;
+            settings.identity = {
+                username: twitch.username,
+                password: `oauth:${twitch.accessToken}`
+            };
 
             twitch.tmi = new Tmi.client(settings);
 
@@ -75,8 +78,14 @@ class Twitch extends Chat {
                 twitch.emit("unmod", channel, username);
             });
 
+/*
+twitch.tmi.on("notice", (a, b, c) => {
+    console.log(a, b, c);
+});
+*/
+
             twitch.tmi.connect().then(() => {
-                twitch.tmi.raw("CAP REQ :twitch.tv/membership");
+                twitch.tmi.raw("CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags");
 
                 resolve();
             }).catch((err) => {
@@ -90,42 +99,79 @@ class Twitch extends Chat {
         return !!(this.accessToken);
     }
 
-    authorize() {
-        var twitch = this,
-            api = this.api,
-            win = new electron.remote.BrowserWindow({width: 800, height: 600, parent: electron.remote.BrowserWindow.getAllWindows().find((w) => w.getTitle() === "Hyperdrive Toolkit"), modal: true, title: "Hyperdrive Toolkit - Waiting for Twitch OAuth"});
-
+    authorize(username, accessToken) {
+        var twitch = this;
+        
         return new Promise((resolve, reject) => {
-            win.loadURL(`file://${__dirname}/twitch.htm`);
-            win.setMenu(null);
+            var api = twitch.api;
 
-            win.once("ready-to-show", () => {
-                win.show();
-            });
+            new Promise((innerResolve, innerReject) => {
+                if (username && accessToken) {
+                    api.getAuthenticatedUser(accessToken, (err, body) => {
+                        if (err) {
+                            innerReject();
+                            // TODO: Handle the error more gracefully.
+                        }
 
-            win.on("access-token", (accessToken) => {
-                twitch.accessToken = accessToken;
-            });
+                        twitch.accessToken = accessToken;
+                        twitch.username = body.name;
+                        twitch.displayName = body.display_name;
 
-            win.on("closed", () => {
-                win = null;
-                if (twitch.accessToken) {
-                    resolve();
+                        twitch.emit("credentials", twitch.username, twitch.accessToken);
+
+                        innerResolve();
+                    });
                 } else {
-                    reject();
+                    innerReject();
                 }
-            });
+            }).then(resolve).catch(() => {
+                var win = new electron.remote.BrowserWindow({width: 800, height: 600, parent: electron.remote.BrowserWindow.getAllWindows().find((w) => w.getTitle() === "Hyperdrive Toolkit"), modal: true, title: "Hyperdrive Toolkit - Waiting for Twitch OAuth"});
+                
+                win.loadURL(`file://${__dirname}/twitch.htm`);
+                win.setMenu(null);
 
-            electron.shell.openExternal(api.getAuthorizationUrl().replace("response_type=code", "response_type=token") + "&force_verify=true");
+                win.once("ready-to-show", () => {
+                    win.show();
+                });
+
+                win.on("access-token", (accessToken) => {
+                    twitch.accessToken = accessToken;
+                    api.getAuthenticatedUser(twitch.accessToken, (err, body) => {
+                        if (err) {
+                            // TODO: Handle the error more gracefully.
+                        }
+
+                        twitch.username = body.name;
+                        twitch.displayName = body.display_name;
+
+                        twitch.emit("credentials", twitch.username, twitch.accessToken);
+                    });
+                });
+
+                win.on("closed", () => {
+                    win = null;
+                    if (twitch.accessToken) {
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                });
+
+                electron.shell.openExternal(api.getAuthorizationUrl().replace("response_type=code", "response_type=token") + "&force_verify=true");
+            });
         });
     }
 
     join(channel) {
-        this.tmi.join(channel);
+        return this.tmi.join(channel);
     }
 
     part(channel) {
-        this.tmi.part(channel);
+        return this.tmi.part(channel);
+    }
+
+    send(channel, command) {
+        return this.tmi.say(channel, command);
     }
 }
 

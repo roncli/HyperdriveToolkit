@@ -1,14 +1,14 @@
-var DataStore = require("../../../js/base/datastore.js");
+var DataStore = require("../../../js/base/datastore");
 
 class Memory extends DataStore {
     constructor () {
         super();
 
-        this.data = {};
+        this.dataStore = {};
     }
 
     get data() {
-        return this.data;
+        return this.dataStore;
     }
 }
 
