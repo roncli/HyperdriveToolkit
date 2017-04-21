@@ -1,8 +1,11 @@
-var electron = require("electron"),
+var http = require("http"),
+    electron = require("electron"),
     Tmi = require("tmi.js"),
     TwitchApi = require("twitch-api"),
     Chat = require("../../../js/base/chat");
-    
+
+require("../../../js/extensions");
+
 class Twitch extends Chat {
     constructor (settings) {
         super();
@@ -77,12 +80,6 @@ class Twitch extends Chat {
             twitch.tmi.on("unmod", (channel, username) => {
                 twitch.emit("unmod", channel, username);
             });
-
-/*
-twitch.tmi.on("notice", (a, b, c) => {
-    console.log(a, b, c);
-});
-*/
 
             twitch.tmi.connect().then(() => {
                 twitch.tmi.raw("CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags");
@@ -172,6 +169,51 @@ twitch.tmi.on("notice", (a, b, c) => {
 
     send(channel, command) {
         return this.tmi.say(channel, command);
+    }
+
+    getStream(channel) {
+        var api = this.api;
+
+        return new Promise((resolve, reject) => {
+            api.getChannelStream(channel, (err, stream) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(stream.stream);
+            });
+        });
+    }
+
+    getChannel(channel) {
+        var api = this.api;
+
+        return new Promise((resolve, reject) => {
+            api.getChannel(channel, (err, channelData) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(channelData);
+            });
+        });
+    }
+
+    getChatters(channel) {
+        return new Promise((resolve, reject) => {
+            http.get("http://tmi.twitch.tv/group/user/" + channel + "/chatters", (res) => {
+                var body = "";
+                res.on("data", (chunk) => {
+                    body += chunk;
+                });
+                res.on("end", () => {
+                    JSON.tryParse(body).then(resolve).catch(reject);
+                });
+                // TODO: Handle errors on res
+            });
+        });
     }
 }
 

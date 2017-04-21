@@ -14,7 +14,10 @@ body {
 }
 
 #display {
+    display: flex;
+    flex-direction: row;
     flex-grow: 1;
+    margin-bottom: 0;
 }
 
 #display > .tab-pane.active {
@@ -24,10 +27,51 @@ body {
 }
 
 #display > .tab-pane > .chat {
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
 }
 
+#display > .tab-pane > .chat > .text {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#display > .tab-pane > .chat > .topic {
+    height: 48px;
+    flex-shrink: 0;
+}
+
+#display > .tab-pane > .chat > .topic .topic-background {
+    position: absolute;
+    width: 100%;
+    height: 48px;
+    opacity: 0.2;
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+#display > .tab-pane > .chat > .topic .topic-foreground {
+    position: absolute;
+    width: 100%;
+    white-space: nowrap;
+}
+
+#display > .tab-pane > .chat > .topic .topic-foreground > .topic-logo {
+    display: inline-block;
+    margin-right: 10px;
+    width: 48px;
+    height: 48px;
+}
+
+#display > .tab-pane > .chat > .topic .topic-foreground > .topic-text {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 #display > .tab-pane > .users {
+    overflow: auto;
     width: 100px;
 }
 
@@ -37,5 +81,8 @@ body {
 
 #inputbox {
     width: 100%;
-    height: 1.2em;
+    min-height: 24px;
+    height: 24px;
+    overflow-y: none;
+    resize: none;
 }

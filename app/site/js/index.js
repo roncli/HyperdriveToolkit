@@ -7,53 +7,108 @@ var electron = require("electron"),
     userSettings = new File(path.join(electron.remote.app.getPath("userData"), "userSettings.js"));
     channels = {},
     getTab = (username) => {
-        return `<li id="tab-${username}"><a data-toggle="tab" href="#channel-${username}">#${username}</a></li>`;
+        return `<li id="tab-${username}" class="channel-tab"><a data-toggle="tab" href="#channel-${username}">#${username}</a></li>`;
     },
     getPanel = (username) => {
         return `<div role="tabpanel" class="tab-pane" id="channel-${username}">
-    <div class="chat" class="chat">
+    <div class="chat">
         <div class="topic"></div>
         <div class="text"></div>
     </div>
-    <div class="users" class="users"></div>
+    <div class="users"></div>
 </div>`;
+    },
+    updateStream = (channel) => {
+        var channelName = channel.substring(1);
+        client.getStream(channelName).then((stream) => {
+            if (stream) {
+                channels[channel].stream = stream;
+                channels[channel].channel = stream.channel;
+                updateTitle(channel);
+            } else {
+                delete channels[channel].stream;
+                client.getChannel(channelName).then((channelData) => {
+                    channels[channel].channel = channelData;
+                    updateTitle(channel);
+                });
+            }
+        });
+
+        client.getChatters(channelName).then((chatters) => {
+            channels[channel].chatters = chatters;
+            updateTitle(channel);
+        });
+    },
+    getTimeSince = (time) => {
+        var diff = new Date().getTime() - new Date(time).getTime();
+
+        return `${Math.floor(diff / 3600000)}:${("0" + Math.floor(diff % 3600000 / 60000)).slice(-2)}`;
+    },
+    updateTitle = (channel) => {
+        var channelName = channel.substring(1);
+        $(`#channel-${channelName} .topic`).html(
+`<div style="position: relative;">
+    ${channels[channel].channel && channels[channel].channel.profile_banner ? `<div class="topic-background" style="background-image: url('${channels[channel].channel.profile_banner}');"></div>` : ""}
+    <div class="topic-foreground">
+        ${channels[channel].channel && channels[channel].channel.logo ? `<img src="${channels[channel].channel.logo}" class="topic-logo">` : ""}
+        ${channels[channel].channel ? `<div class="topic-text">
+            ${channel} - ${channels[channel].channel.status} (${channels[channel].channel.game})<br />
+            ${channels[channel].stream ? `Online: ${getTimeSince(channels[channel].stream.created_at)} - Viewers: ${channels[channel].stream.viewers} - ` : ""}${channels[channel].chatters ? `Chatters: ${channels[channel].chatters.chatter_count} - ` : ""}Followers: ${channels[channel].channel.followers} - Views: ${channels[channel].channel.views}
+        </div>` : ""}
+    </div>
+</div>`);
     };
 
 client.on("message", (channel, username, displayname, text) => {
-    console.log("message", channel, username, text);
-    $(`#channel-${channel.substring(1)} .text`).append(`<b>${displayname}</b>: ${text}<br />`);
+    var channelName = channel.substring(1);
+    $(`#channel-${channelName} .text`).append(`<b>${displayname}</b>: ${text}<br />`);
 });
 
 client.on("join", (channel, username, self) => {
-    console.log("join", channel, username);
+    var channelName = channel.substring(1);
     if (self) {
         channels[channel] = {
-            users: []
+            users: [],
+            interval: setInterval(() => updateStream(channel), 60000)
         };
-        $("#channels").append(getTab(channel.substring(1)));
-        $("#display").append(getPanel(channel.substring(1)));
+        $("#channels").append(getTab(channelName));
+        $("#display").append(getPanel(channelName));
+        if (Object.keys(channels).length === 1) {
+            $(`#tab-${channelName} > a`).tab("show");
+        }
+        updateStream(channel);
     }
     channels[channel].users.push(username);
-    $(`#channel-${channel.substring(1)} .text`).append(`<i>${(self ? "You have" : `${username} has`)} joined ${channel}<br />`);
-    $(`#channel-${channel.substring(1)} .users`).html(channels[channel].users.join("<br />"));
+    $(`#channel-${channelName} .text`).append(`<i>${(self ? "You have" : `${username} has`)} joined ${channel}<br />`);
+    $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
 });
 
 client.on("part", (channel, username, self) => {
-    channels[channel].users.splice(channels[channel].users.indexOf(username), 1);
+    var channelName = channel.substring(1);
     if (self) {
-        $(`#tab-${channel.substring(1)}`).remove();
-        $(`#channel-${channel.substring(1)}`).remove();
+        let index = $(`#tab-${channelName}`).index();
+        $(`#tab-${channelName}`).remove();
+        $(`#channel-${channelName}`).remove();
+        clearInterval(channels[channel].interval);
+        delete channels[channel];
+        if ($(".channel-tab.active").length === 0) {
+            $(`.channel-tab:nth-child(${index === Object.keys(channels).length ? index : index + 1}) > a`).tab("show");
+        }
+    } else {
+        channels[channel].users.splice(channels[channel].users.indexOf(username), 1);
+        $(`#channel-${channelName} .text`).append(`<i>${`${username}`} has left ${channel}<br />`);
+        $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
     }
-    $(`#channel-${channel.substring(1)} .text`).append(`<i>${(self ? "You have" : `${username} has`)} left ${channel}<br />`);
-    $(`#channel-${channel.substring(1)} .users`).html(channels[channel].users.join("<br />"));
 });
 
 client.on("mod", (channel, username) => {
-    $(`#channel-${channel.substring(1)} .text`).append(`<i>${username} is now a moderator of ${channel}<br />`);
+    var channelName = channel.substring(1);
+    $(`#channel-${channelName} .text`).append(`<i>${username} is now a moderator of ${channel}<br />`);
 });
 
 client.on("unmod", (channel, username) => {
-    $(`#channel-${channel.substring(1)} .text`).append(`<i>${username} is no longer a moderator of ${channel}<br />`);
+    var channelName = channel.substring(1);
+    $(`#channel-${channelName} .text`).append(`<i>${username} is no longer a moderator of ${channel}<br />`);
 });
 
 client.on("credentials", (username, accessToken) => {
@@ -84,32 +139,45 @@ userSettings.load().then(() => {
 });
 
 $(document).ready(() => {
-    var $inputbox = $("#inputbox");
+    var $inputbox = $("#inputbox"),
+        patterns = {
+            join: /^\/join #?([a-z0-9_]+)$/i,
+            part: /^\/part$/i
+        },
+        setSize = ($el) => {
+            setTimeout(() => {
+                $el.css({height: "1px"});
+                $el.css({height: `${$el.prop("scrollHeight") + 2}px`});
+            }, 0);
+        };
 
     $inputbox.on("keypress", (ev) => {
         if (ev.keyCode === 13 && client.connected) {
             let input = $inputbox.val(),
                 matches;
 
-            matches = /^\/join #?([a-z0-9_]+)$/i.exec(input);
-
-            if (matches) {
+            if (matches = patterns.join.exec(input)) {
                 let channel = matches[1].toLowerCase();
                 client.join(`#${channel}`);
-                return;
-            }
-
-            matches = /^\/part$/i.exec(input);
-
-            if (matches) {
+            } else if (matches = patterns.part.exec(input)) {
                 client.part($("#channels li.active").text());
-                return;
+            } else {
+                client.send($("#channels li.active").text(), $inputbox.val());
             }
 
-            client.send($("#channels li.active").text(), $inputbox.val());
             $inputbox.val("");
+            
+            ev.preventDefault();
+            return false;
         }
     });
+
+    $inputbox.on("change", () => setSize($inputbox));
+    $inputbox.on("cut", () => setSize($inputbox));
+    $inputbox.on("paste", () => setSize($inputbox));
+    $inputbox.on("drop", () => setSize($inputbox));
+    $inputbox.on("keydown", () => setSize($inputbox));
+    $inputbox.on("keyup", () => setSize($inputbox));
 
     $("#channels").on("click", "a", (ev) => {
         ev.preventDefault();
