@@ -2,9 +2,20 @@ var http = require("http"),
     electron = require("electron"),
     Tmi = require("tmi.js"),
     TwitchApi = require("twitch-api"),
-    Chat = require("../../../js/base/chat");
+    Chat = require("../../../js/base/chat"),
+    rangeRegex = /^([0-9]+)-([0-9]+)$/;
 
 require("../../../js/extensions");
+
+TwitchApi.prototype.getEmoticonImages = function(callback) {
+    this._executeRequest(
+        {
+            method: 'GET',
+            path: '/chat/emoticon_images',
+        },
+        callback
+    );
+}
 
 class Twitch extends Chat {
     constructor (settings) {
@@ -48,6 +59,7 @@ class Twitch extends Chat {
 
             twitch.tmi.on("connected", (address, port) => {
                 twitch.emit("connected", address, port);
+                //twitch.api.getEmoticonImages((err, emotes) => console.log(err, emotes));
             });
 
             twitch.tmi.on("disconnected", (message) => {
@@ -62,7 +74,38 @@ class Twitch extends Chat {
             });
 
             twitch.tmi.on("message", (channel, userstate, text, self) => {
-                twitch.emit("message", channel, userstate.username, userstate["display-name"], text);
+                var span = $("<span></span>");
+                if (userstate.emotes) {
+                    let emotes = {},
+                        lastEnd = 0;
+                    Object.keys(userstate.emotes).forEach((id) => {
+                        var ranges = userstate.emotes[id];
+                        ranges.forEach((range) => {
+                            var matches = rangeRegex.exec(range);
+                            emotes[+matches[1]] = {start: +matches[1], end: +matches[2], id: id};
+                        });
+                    });
+                    Object.keys(emotes).sort((a, b) => a.start - b.start).forEach((start) => {
+                        var emote = emotes[start];
+
+                        if (start > lastEnd) {
+                            span.append($("<span></span>").text(text.substring(lastEnd, start)).html());
+                        }
+
+                        span.append($("<img></img>").attr({
+                            src: `https://static-cdn.jtvnw.net/emoticons/v1/${emote.id}/1.0`,
+                            title: text.substring(start, emote.end + 1)
+                        }));
+
+                        lastEnd = emote.end + 1;
+                    });
+                    if (lastEnd < text.length) {
+                        span.append($("<span></span>").text(text.substring(lastEnd)).html());
+                    }
+                } else {
+                    span.text(text);
+                }
+                twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], span.html());
             });
 
             twitch.tmi.on("join", (channel, username, self) => {

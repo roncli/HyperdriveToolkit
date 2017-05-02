@@ -13,6 +13,13 @@ body {
 
 }
 
+#channels li > a {
+    padding: 5px;
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
 #display {
     display: flex;
     flex-direction: row;
@@ -54,25 +61,42 @@ body {
 
 #display > .tab-pane > .chat > .topic .topic-foreground {
     position: absolute;
+    display: flex;
+    flex-direction: row;
     width: 100%;
     white-space: nowrap;
 }
 
 #display > .tab-pane > .chat > .topic .topic-foreground > .topic-logo {
-    display: inline-block;
+    display: block;
     margin-right: 10px;
     width: 48px;
     height: 48px;
 }
 
 #display > .tab-pane > .chat > .topic .topic-foreground > .topic-text {
-    display: inline-block;
-    vertical-align: middle;
+    flex-grow: 1;
+    height: 48px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#display > .tab-pane > .divider {
+    background-color: #cccccc;
+    width: 4px;
+    cursor: ew-resize;
 }
 
 #display > .tab-pane > .users {
     overflow: auto;
     width: 100px;
+    min-width: 75px;
+    max-width: 250px;
 }
 
 #input {

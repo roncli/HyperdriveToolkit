@@ -15,6 +15,7 @@ var electron = require("electron"),
         <div class="topic"></div>
         <div class="text"></div>
     </div>
+    <div class="divider"></div>
     <div class="users"></div>
 </div>`;
     },
@@ -59,9 +60,9 @@ var electron = require("electron"),
 </div>`);
     };
 
-client.on("message", (channel, username, displayname, text) => {
+client.on("message", (channel, username, usercolor, displayname, html) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`<b>${displayname}</b>: ${text}<br />`);
+    $(`#channel-${channelName} .text`).append(`<b style="color: ${usercolor}">${displayname}</b>: ${html}<br />`);
 });
 
 client.on("join", (channel, username, self) => {
@@ -182,5 +183,22 @@ $(document).ready(() => {
     $("#channels").on("click", "a", (ev) => {
         ev.preventDefault();
         $(this).tab("show");
+    });
+
+    $("#display").on("mousedown", "div.divider", (ev) => {
+        var pageX = ev.pageX,
+            $users = $(ev.target).next("div.users"),
+            width = $users.width();
+        
+        $("#display").on("mousemove", (ev) => {
+            width += pageX - ev.pageX;
+            $users.width(width);
+            pageX = ev.pageX;
+        });
+        $("#display").on("mouseup", () => {
+            $("#display").off("mousemove");
+        });
+
+        ev.preventDefault();
     });
 });
