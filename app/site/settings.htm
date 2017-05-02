@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+        <script>$ = jQuery = require("jquery")</script>
+        <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="js/settings.js"></script>
+        <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"></link>
+        <link href="../node_modules/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet"></link>
+        <link href="css/settings.css" rel="stylesheet"></link>
+    </head>
+    <body>
+        <ul id="categories" class="nav nav-tabs">
+            <li id="tab-chat" class="active"><a data-toggle="tab" href="#chat">Chat</a></li>
+            <li id="tab-huh"><a data-toggle="tab" href="#huh">Some other settings</a></li>
+        </ul>
+        <div id="display" class="tab-content panel">
+            <div role="tabpanel" class="tab-pane active" id="chat">
+                I am the chat settings! \o/
+            </div>
+            <div role="tabpanel" class="tab-pane" id="huh">
+                I don't know what I am! /o\
+            </div>
+        </div>
+    </body>
+</html>

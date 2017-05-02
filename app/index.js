@@ -1,11 +1,11 @@
-const {app, BrowserWindow} = require("electron");
+const {app, BrowserWindow, Menu} = require("electron");
 
 var win,
     createWindow = () => {
         win = new BrowserWindow({show: false, width: 800, height: 600, minWidth: 800, minHeight: 600, icon: __dirname + "/../logo/logo.ico", title: "Hyperdrive Toolkit"}); // TODO: Get the right icon.
         win.loadURL(`file://${__dirname}/site/index.htm`);
         win.setMenu(null);
-        win.maximize();
+        win.maximize(); // TODO: Remember previous window position?
         win.toggleDevTools(); // TODO: Remove for release.
 
         win.once("ready-to-show", () => {
@@ -15,6 +15,8 @@ var win,
         win.on("closed", () => {
             win = null;
         });
+
+        require("./mainmenu");
     };
 
 app.on("ready", createWindow);

@@ -27,3 +27,5 @@ window.addEventListener("beforeunload", function(ev) {
 window.addEventListener("unload", function() {
     server.close();
 });
+
+electron.remote.getCurrentWindow().setMenu(null);

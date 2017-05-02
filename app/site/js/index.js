@@ -1,10 +1,10 @@
 var electron = require("electron"),
     path = require("path"),
     Twitch = require("./modules/chat/twitch"), // TODO: Load modules
-    File = require("./modules/datastore/file"),
-    settings = require("./js/settings"),
+    settings = require("./js/apiSettings"),
     client = new Twitch(settings),
-    userSettings = new File(path.join(electron.remote.app.getPath("userData"), "userSettings.js"));
+    File = require("./modules/datastore/file"),
+    userSettings = new File(path.join(electron.remote.app.getPath("userData"), "userSettings.js")),
     channels = {},
     getTab = (username) => {
         return `<li id="tab-${username}" class="channel-tab"><a data-toggle="tab" href="#channel-${username}">#${username}</a></li>`;
@@ -134,7 +134,7 @@ userSettings.load().then(() => {
         }
     }).then(() => {
         client.connect().then(() => {
-            client.join("#roncli");
+            client.join("#roncli"); // TODO: Ask to join a channel?
         });
     });
 });
@@ -152,6 +152,7 @@ $(document).ready(() => {
             }, 0);
         };
 
+    // Setup input box resizing
     $inputbox.on("keypress", (ev) => {
         if (ev.keyCode === 13 && client.connected) {
             let input = $inputbox.val(),
@@ -180,11 +181,13 @@ $(document).ready(() => {
     $inputbox.on("keydown", () => setSize($inputbox));
     $inputbox.on("keyup", () => setSize($inputbox));
 
+    // Setup channel tabs.
     $("#channels").on("click", "a", (ev) => {
         ev.preventDefault();
         $(this).tab("show");
     });
 
+    // Setup user list divider.
     $("#display").on("mousedown", "div.divider", (ev) => {
         var pageX = ev.pageX,
             $users = $(ev.target).next("div.users"),

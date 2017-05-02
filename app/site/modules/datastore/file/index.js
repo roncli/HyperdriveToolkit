@@ -44,7 +44,7 @@ class File extends DataStore {
                         
                         resolve();
                     });
-                }).then(outerResolve).catch(outerReject);
+                }).then(outerResolve).catch(outerReject); // TODO: Handle rejection better.
             });
         });
     }
@@ -71,7 +71,7 @@ class File extends DataStore {
                                     resolve();
                                 });
                             });
-                        }).then(outerResolve).catch(outerReject);
+                        }).then(outerResolve).catch(outerReject); // TODO: Handle rejection better.
                     });
                 } else {
                     outerResolve();
