@@ -1,0 +1,18 @@
+.table-row {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.caption {
+    padding: 1px 3px;
+    display: table-cell;
+    flex: 1;
+    text-align: right;
+}
+
+.input {
+    padding: 1px 3px;
+    display: table-cell;
+    flex: 1;
+}

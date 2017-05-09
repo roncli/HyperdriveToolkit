@@ -11,15 +11,63 @@
     <body>
         <ul id="categories" class="nav nav-tabs">
             <li id="tab-chat" class="active"><a data-toggle="tab" href="#chat">Chat</a></li>
-            <li id="tab-huh"><a data-toggle="tab" href="#huh">Some other settings</a></li>
+            <!--<li id="tab-huh"><a data-toggle="tab" href="#huh">Some other settings</a></li>-->
         </ul>
         <div id="display" class="tab-content panel">
             <div role="tabpanel" class="tab-pane active" id="chat">
-                I am the chat settings! \o/
+                <div class="table-row">
+                    <div class="caption">Font:</div>
+                    <div class="input"><input type="text" id="font-face" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Size:</div>
+                    <div class="input"><input type="text" id="font-size" size="2" />px</div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Chat Default Text Color:</div>
+                    <div class="input"><input type="text" id="colors-chat-foreground" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Chat Background Color:</div>
+                    <div class="input"><input type="text" id="colors-chat-background" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Chat Info Text Color:</div>
+                    <div class="input"><input type="text" id="colors-chat-info" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Chat Join Text Color:</div>
+                    <div class="input"><input type="text" id="colors-chat-join" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Chat Part Text Color:</div>
+                    <div class="input"><input type="text" id="colors-chat-part" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Chat Highlight Text Color:</div>
+                    <div class="input"><input type="text" id="colors-chat-highlight" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Input Text Color:</div>
+                    <div class="input"><input type="text" id="colors-input-foreground" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">Input Background Color:</div>
+                    <div class="input"><input type="text" id="colors-input-background" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">User List Text Color:</div>
+                    <div class="input"><input type="text" id="colors-userlist-foreground" /></div>
+                </div>
+                <div class="table-row">
+                    <div class="caption">User List Background Color:</div>
+                    <div class="input"><input type="text" id="colors-userlist-background" /></div>
+                </div>
             </div>
-            <div role="tabpanel" class="tab-pane" id="huh">
+            <!--<div role="tabpanel" class="tab-pane" id="huh">
                 I don't know what I am! /o\
-            </div>
+            </div>-->
         </div>
+        <button id="save">Save Settings</button>
     </body>
 </html>

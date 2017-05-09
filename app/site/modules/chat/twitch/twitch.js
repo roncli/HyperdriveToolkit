@@ -1,6 +1,7 @@
-var electron = require("electron"),
-    express = require("express"),
-    app = express(),
+const electron = require("electron"),
+    express = require("express");
+
+var app = express(),
     server, accessToken;
 
 app.use(express.static(`${__dirname}/public`, {index: "index.htm"}));
@@ -12,7 +13,6 @@ app.get("/token-redirect", function(req, res) {
     window.close();
 });
 
-console.log("Listening on port 65100.");
 app.listen(65100);
 
 window.addEventListener("beforeunload", function(ev) {

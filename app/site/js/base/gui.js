@@ -1,3 +1,13 @@
+//   ###            #   
+//  #   #               
+//  #      #   #   ##   
+//  #      #   #    #   
+//  #  ##  #   #    #   
+//  #   #  #  ##    #   
+//   ###    ## #   ###  
+/**
+ * A class that represents a GUI module.
+ */
 class Gui {
     constructor() {}
 }

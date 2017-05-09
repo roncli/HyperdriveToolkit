@@ -20,7 +20,9 @@
     "dependencies": {
         "bootstrap": "3.3.7",
         "express": "4.15.2",
+        "iconv-lite": "0.4.17",
         "jquery": "3.2.1",
+        "node-fonts": "1.0.0",
         "tmi.js": "1.1.2",
         "twitch-api": "0.4.6"
     },

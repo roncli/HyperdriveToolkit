@@ -1,6 +1,15 @@
-const {app, BrowserWindow, Menu} = require("electron");
+const {app, BrowserWindow} = require("electron"),
+    MainMenu = require("./mainmenu"),
 
-var win,
+    //                          #          #  #   #             #              
+    //                          #          #  #                 #              
+    //  ##   ###    ##    ###  ###    ##   #  #  ##    ###    ###   ##   #  #  
+    // #     #  #  # ##  #  #   #    # ##  ####   #    #  #  #  #  #  #  #  #  
+    // #     #     ##    # ##   #    ##    ####   #    #  #  #  #  #  #  ####  
+    //  ##   #      ##    # #    ##   ##   #  #  ###   #  #   ###   ##   ####  
+    /**
+     * Creates the main window.
+     */
     createWindow = () => {
         win = new BrowserWindow({show: false, width: 800, height: 600, minWidth: 800, minHeight: 600, icon: __dirname + "/../logo/logo.ico", title: "Hyperdrive Toolkit"}); // TODO: Get the right icon.
         win.loadURL(`file://${__dirname}/site/index.htm`);
@@ -16,17 +25,40 @@ var win,
             win = null;
         });
 
-        require("./mainmenu");
+        this.menu = new MainMenu(win);
     };
 
+var win;
+
+//                                                                #        
+//                                                                #        
+//  ###  ###   ###          ##   ###         ###    ##    ###   ###  #  #  
+// #  #  #  #  #  #        #  #  #  #        #  #  # ##  #  #  #  #  #  #  
+// # ##  #  #  #  #        #  #  #  #        #     ##    # ##  #  #   # #  
+//  # #  ###   ###          ##   #  #        #      ##    # #   ###    #   
+//       #     #                                                      #    
 app.on("ready", createWindow);
 
+//                                                  #             #                          ##    ##                ##                          #  
+//                                                                #                           #     #                 #                          #  
+//  ###  ###   ###          ##   ###         #  #  ##    ###    ###   ##   #  #         ###   #     #           ##    #     ##    ###    ##    ###  
+// #  #  #  #  #  #        #  #  #  #        #  #   #    #  #  #  #  #  #  #  #  ####  #  #   #     #    ####  #      #    #  #  ##     # ##  #  #  
+// # ##  #  #  #  #        #  #  #  #        ####   #    #  #  #  #  #  #  ####        # ##   #     #          #      #    #  #    ##   ##    #  #  
+//  # #  ###   ###          ##   #  #        ####  ###   #  #   ###   ##   ####         # #  ###   ###          ##   ###    ##   ###     ##    ###  
+//       #     #                                                                                                                                    
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
         app.quit();
     }
 });
 
+//                                                        #     #                 #          
+//                                                        #                       #          
+//  ###  ###   ###          ##   ###          ###   ##   ###   ##    # #    ###  ###    ##   
+// #  #  #  #  #  #        #  #  #  #        #  #  #      #     #    # #   #  #   #    # ##  
+// # ##  #  #  #  #        #  #  #  #        # ##  #      #     #    # #   # ##   #    ##    
+//  # #  ###   ###          ##   #  #         # #   ##     ##  ###    #     # #    ##   ##   
+//       #     #                                                                             
 app.on("activate", () => {
     if (win === null) {
         createWindow();

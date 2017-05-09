@@ -1,14 +1,32 @@
 var electron = require("electron"),
+    remote = electron.remote,
+    app = remote.app,
+    win = remote.getCurrentWindow(),
     path = require("path"),
     Twitch = require("./modules/chat/twitch"), // TODO: Load modules
     settings = require("./js/apiSettings"),
     client = new Twitch(settings),
     File = require("./modules/datastore/file"),
-    userSettings = new File(path.join(electron.remote.app.getPath("userData"), "userSettings.js")),
     channels = {},
+
+    //              #    ###         #     
+    //              #     #          #     
+    //  ###   ##   ###    #     ###  ###   
+    // #  #  # ##   #     #    #  #  #  #  
+    //  ##   ##     #     #    # ##  #  #  
+    // #      ##     ##   #     # #  ###   
+    //  ###                                
     getTab = (username) => {
         return `<li id="tab-${username}" class="channel-tab"><a data-toggle="tab" href="#channel-${username}">#${username}</a></li>`;
     },
+
+    //              #    ###                     ##    
+    //              #    #  #                     #    
+    //  ###   ##   ###   #  #   ###  ###    ##    #    
+    // #  #  # ##   #    ###   #  #  #  #  # ##   #    
+    //  ##   ##     #    #     # ##  #  #  ##     #    
+    // #      ##     ##  #      # #  #  #   ##   ###   
+    //  ###                                            
     getPanel = (username) => {
         return `<div role="tabpanel" class="tab-pane" id="channel-${username}">
     <div class="chat">
@@ -19,6 +37,14 @@ var electron = require("electron"),
     <div class="users"></div>
 </div>`;
     },
+
+    //                #         #           ##    #                            
+    //                #         #          #  #   #                            
+    // #  #  ###    ###   ###  ###    ##    #    ###   ###    ##    ###  # #   
+    // #  #  #  #  #  #  #  #   #    # ##    #    #    #  #  # ##  #  #  ####  
+    // #  #  #  #  #  #  # ##   #    ##    #  #   #    #     ##    # ##  #  #  
+    //  ###  ###    ###   # #    ##   ##    ##     ##  #      ##    # #  #  #  
+    //       #                                                                 
     updateStream = (channel) => {
         var channelName = channel.substring(1);
         client.getStream(channelName).then((stream) => {
@@ -40,11 +66,27 @@ var electron = require("electron"),
             updateTitle(channel);
         });
     },
+
+    //              #    ###    #                 ##    #                      
+    //              #     #                      #  #                          
+    //  ###   ##   ###    #    ##    # #    ##    #    ##    ###    ##    ##   
+    // #  #  # ##   #     #     #    ####  # ##    #    #    #  #  #     # ##  
+    //  ##   ##     #     #     #    #  #  ##    #  #   #    #  #  #     ##    
+    // #      ##     ##   #    ###   #  #   ##    ##   ###   #  #   ##    ##   
+    //  ###                                                                    
     getTimeSince = (time) => {
         var diff = new Date().getTime() - new Date(time).getTime();
 
         return `${Math.floor(diff / 3600000)}:${("0" + Math.floor(diff % 3600000 / 60000)).slice(-2)}`;
     },
+
+    //                #         #          ###    #     #    ##          
+    //                #         #           #           #     #          
+    // #  #  ###    ###   ###  ###    ##    #    ##    ###    #     ##   
+    // #  #  #  #  #  #  #  #   #    # ##   #     #     #     #    # ##  
+    // #  #  #  #  #  #  # ##   #    ##     #     #     #     #    ##    
+    //  ###  ###    ###   # #    ##   ##    #    ###     ##  ###    ##   
+    //       #                                                           
     updateTitle = (channel) => {
         var channelName = channel.substring(1);
         $(`#channel-${channelName} .topic`).html(
@@ -58,13 +100,101 @@ var electron = require("electron"),
         </div>` : ""}
     </div>
 </div>`);
+    },
+
+    //       #                              ##                 
+    //       #                             #  #                
+    //  ##   ###    ###  ###    ###   ##   #      ###    ###   
+    // #     #  #  #  #  #  #  #  #  # ##  #     ##     ##     
+    // #     #  #  # ##  #  #   ##   ##    #  #    ##     ##   
+    //  ##   #  #   # #  #  #  #      ##    ##   ###    ###    
+    //                          ###                            
+    // Based on http://stackoverflow.com/a/19826393/214137
+    changeCss = (cssName, cssValue) => {
+        var cssMainContainer = $("#css-modifier-container"),
+            classContainer = cssMainContainer.find(`div[data-class="${cssName}"]`);
+
+        // Create hidden css main container if it doesn't exist.
+        if (cssMainContainer.length === 0) {
+            cssMainContainer = $("<div></div>").attr({id: "css-modifier-container"});
+            cssMainContainer.hide();
+            cssMainContainer.appendTo($("body"));
+        }
+
+        // Create div for the css if it doesn't exist.
+        if (classContainer.length === 0) {
+            classContainer = $("<div></div>").attr({"data-class": cssName});
+            classContainer.appendTo(cssMainContainer);
+        }
+
+        // Replace style in the css div.
+        classContainer.html(`<style>${cssName}{${cssValue}}</style>`);
+    },
+
+    //               #     #     #                        ##   #                                #  
+    //               #     #                             #  #  #                                #  
+    //  ###    ##   ###   ###   ##    ###    ###   ###   #     ###    ###  ###    ###   ##    ###  
+    // ##     # ##   #     #     #    #  #  #  #  ##     #     #  #  #  #  #  #  #  #  # ##  #  #  
+    //   ##   ##     #     #     #    #  #   ##     ##   #  #  #  #  # ##  #  #   ##   ##    #  #  
+    // ###     ##     ##    ##  ###   #  #  #     ###     ##   #  #   # #  #  #  #      ##    ###  
+    //                                       ###                                  ###              
+    settingsChanged = () => {
+        changeCss("#display", `font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`); // TODO: Potentially have a max size for title, input bo
+        changeCss("#display div.chat", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; background-color: ${win.data.appSettings.data.chat.colors.chat.background};`);
+        //changeCss("#display div.chat .text", `font-size: ${win.data.appSettings.data.chat.font.size}px;`);
+        changeCss("#display div.chat .info", `color: ${win.data.appSettings.data.chat.colors.chat.info};`);
+        changeCss("#display div.chat .join", `color: ${win.data.appSettings.data.chat.colors.chat.join};`);
+        changeCss("#display div.chat .part", `color: ${win.data.appSettings.data.chat.colors.chat.part};`);
+        changeCss("#display div.chat .highlight", `color: ${win.data.appSettings.data.chat.colors.chat.highlight};`);
+        changeCss("#inputbox", `color: ${win.data.appSettings.data.chat.colors.input.foreground}; background-color: ${win.data.appSettings.data.chat.colors.input.background}; font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`);
+        changeCss("#display div.users", `color: ${win.data.appSettings.data.chat.colors.userList.foreground}; background-color: ${win.data.appSettings.data.chat.colors.userList.background};`);
+        setSize($("#inputbox"));
+    },
+
+
+    //               #     ##    #                
+    //               #    #  #                    
+    //  ###    ##   ###    #    ##    ####   ##   
+    // ##     # ##   #      #    #      #   # ##  
+    //   ##   ##     #    #  #   #     #    ##    
+    // ###     ##     ##   ##   ###   ####   ##   
+    setSize = ($el) => {
+        setTimeout(() => {
+            $el.css({height: "1px"});
+            $el.css({height: `${$el.prop("scrollHeight") + 2}px`});
+        }, 0);
     };
 
-client.on("message", (channel, username, usercolor, displayname, html) => {
+if (!win.data) {
+    win.data = {};
+}
+win.data.userSettings = new File(path.join(app.getPath("userData"), "userSettings.js")),
+win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.js")),
+
+//       ##     #                 #                        #    # #                                               # #   #    
+//        #                       #                       #     # #                                               # #    #   
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #   
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ####  # ##  ##     ##     #  #  #  #  # ##          #   
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  ##      ##     ##   # ##   ##   ##            #   
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #    
+//                                                                                                    ###                    
+client.on("message", (channel, username, usercolor, displayname, html, text) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`<b style="color: ${usercolor}">${displayname}</b>: ${html}<br />`);
+
+    if (text.indexOf(win.data.userSettings.data.twitch.username) === -1) {
+        $(`#channel-${channelName} .text`).append(`<b style="color: ${usercolor}">${displayname}</b>: ${html}<br />`);
+    } else {
+        $(`#channel-${channelName} .text`).append(`<b style="color: ${usercolor}">${displayname}</b>: <span class="highlight">${html}</span><br />`);
+    }
 });
 
+//       ##     #                 #                        #    # #    #          #           # #   #    
+//        #                       #                       #     # #                           # #    #   
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #    #    ##   ##    ###    # #    #   
+// #      #     #    # ##  #  #   #          #  #  #  #   #            #   #  #   #    #  #          #   
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #            #   #  #   #    #  #          #   
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         # #    ##   ###   #  #         #    
+//                                                                    #                                  
 client.on("join", (channel, username, self) => {
     var channelName = channel.substring(1);
     if (self) {
@@ -80,10 +210,17 @@ client.on("join", (channel, username, self) => {
         updateStream(channel);
     }
     channels[channel].users.push(username);
-    $(`#channel-${channelName} .text`).append(`<i>${(self ? "You have" : `${username} has`)} joined ${channel}<br />`);
+    $(`#channel-${channelName} .text`).append(`<span class="join">${(self ? "You have" : `${username} has`)} joined ${channel}</span><br />`);
     $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
 });
 
+//       ##     #                 #                        #    # #                     #     # #   #    
+//        #                       #                       #     # #                     #     # #    #   
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ###  ###   ###    # #    #   
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  #  #   #            #   
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  # ##  #      #            #   
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###    # #  #       ##         #    
+//                                                                   #                                   
 client.on("part", (channel, username, self) => {
     var channelName = channel.substring(1);
     if (self) {
@@ -97,61 +234,169 @@ client.on("part", (channel, username, self) => {
         }
     } else {
         channels[channel].users.splice(channels[channel].users.indexOf(username), 1);
-        $(`#channel-${channelName} .text`).append(`<i>${`${username}`} has left ${channel}<br />`);
+        $(`#channel-${channelName} .text`).append(`<span class="part">${`${username}`} has left ${channel}</span><br />`);
         $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
     }
 });
 
+//       ##     #                 #                        #    # #                 #   # #   #    
+//        #                       #                       #     # #                 #   # #    #   
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###   # #    #   
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ####  #  #  #  #          #   
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #          #   
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##    ###         #    
 client.on("mod", (channel, username) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`<i>${username} is now a moderator of ${channel}<br />`);
+    $(`#channel-${channelName} .text`).append(`<span class="info">${username} is now a moderator of ${channel}</span><br />`);
 });
 
+//       ##     #                 #                        #    # #                             #   # #   #    
+//        #                       #                       #     # #                             #   # #    #   
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  #  #  ###   # #    ##    ###   # #    #   
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  ####  #  #  #  #          #   
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #  #  #  #  #          #   
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ###  #  #  #  #   ##    ###         #    
 client.on("unmod", (channel, username) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`<i>${username} is no longer a moderator of ${channel}<br />`);
+    $(`#channel-${channelName} .text`).append(`<span class="info">${username} is no longer a moderator of ${channel}</span><br />`);
 });
 
+//       ##     #                 #                        #    # #                       #               #     #          ##            # #   #    
+//        #                       #                       #     # #                       #               #                 #            # #    #   
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ##   ###    ##    ###   ##   ###   ###   ##     ###   #     ###    # #    #   
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #     #  #  # ##  #  #  # ##  #  #   #     #    #  #   #    ##             #   
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #     #     ##    #  #  ##    #  #   #     #    # ##   #      ##           #   
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ##   #      ##    ###   ##   #  #    ##  ###    # #  ###   ###           #    
 client.on("credentials", (username, accessToken) => {
-    if (!userSettings.data.twitch) {
-        userSettings.data.twitch = {};
+    if (!win.data.userSettings.data.twitch) {
+        win.data.userSettings.data.twitch = {};
     }
 
-    userSettings.queue(() => {
-        userSettings.data.twitch.username = username;
-        userSettings.data.twitch.accessToken = accessToken;
+    win.data.userSettings.queue(() => {
+        win.data.userSettings.data.twitch.username = username;
+        win.data.userSettings.data.twitch.accessToken = accessToken;
     }).then(() => {
-        userSettings.save();
+        win.data.userSettings.save();
     });
 });
 
-userSettings.load().then(() => {
-    new Promise((resolve, reject) => {
-        if (userSettings.data && userSettings.data.twitch) {
-            client.authorize(userSettings.data.twitch.username, userSettings.data.twitch.accessToken).then(resolve);
+//                           ##          #     #     #                             ##                   #  
+//                          #  #         #     #                                    #                   #  
+// #  #   ###    ##   ###    #     ##   ###   ###   ##    ###    ###   ###          #     ##    ###   ###  
+// #  #  ##     # ##  #  #    #   # ##   #     #     #    #  #  #  #  ##            #    #  #  #  #  #  #  
+// #  #    ##   ##    #     #  #  ##     #     #     #    #  #   ##     ##    ##    #    #  #  # ##  #  #  
+//  ###  ###     ##   #      ##    ##     ##    ##  ###   #  #  #     ###     ##   ###    ##    # #   ###  
+//                                                               ###                                       
+win.data.userSettings.load().then(() => {
+    new Promise((resolve) => {
+        if (win.data.userSettings.data && win.data.userSettings.data.twitch) {
+            client.authorize(win.data.userSettings.data.twitch.username, win.data.userSettings.data.twitch.accessToken).then(resolve);
         } else {
             client.authorize().then(resolve);
         }
     }).then(() => {
         client.connect().then(() => {
-            client.join("#roncli"); // TODO: Ask to join a channel?
+            client.join(`#${win.data.userSettings.data.twitch.username}`);
         });
     });
 });
 
+//                    ##          #     #     #                             ##                   #  
+//                   #  #         #     #                                    #                   #  
+//  ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          #     ##    ###   ###  
+// #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##            #    #  #  #  #  #  #  
+// # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##    ##    #    #  #  # ##  #  #  
+//  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###     ##   ###    ##    # #   ###  
+//       #     #                                          ###                                       
+win.data.appSettings.load().then(() => {
+    if (!win.data.appSettings.data.chat) {
+        win.data.appSettings.data.chat = {
+            font: {
+                face: "",
+                size: 14
+            },
+            colors: {
+                chat: {
+                    foreground: "#000000",
+                    background: "#ffffff",
+                    info: "#0080ff",
+                    join: "#333333",
+                    part: "#333333",
+                    highlight: "#ff0000"
+                },
+                input: {
+                    foreground: "#000000",
+                    background: "#ffffff"
+                },
+                userList: {
+                    foreground: "#000000",
+                    background: "#ffffff"
+                }
+            }
+        };
+    }
+
+    settingsChanged();
+});
+
+//                    ##          #     #     #                                                                           #  
+//                   #  #         #     #                                                                                 #  
+//  ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ##   ###          ###    ###  # #    ##    ###  
+// #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##           #  #  #  #        ##     #  #  # #   # ##  #  #  
+// # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##         #  #  #  #          ##   # ##  # #   ##    #  #  
+//  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###           ##   #  #        ###     # #   #     ##    ###  
+//       #     #                                          ###                                                                
+win.data.appSettings.on("saved", () => {
+    settingsChanged();
+});
+
+//        #                                                     ##          #     #     #                                          #    
+//                                                             #  #         #     #                                                #    
+// #  #  ##    ###          ##   ###          ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ###   ##   ###   
+// #  #   #    #  #        #  #  #  #        #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##     ####  #  #  # ##   #    
+// ####   #    #  #        #  #  #  #        # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##          ##   ##     #    
+// ####  ###   #  #         ##   #  #         # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###          #      ##     ##  
+//                                                 #     #                                          ###                ###              
+win.on("appSettings-get", (remoteWin) => {
+    remoteWin.emit("appSettings-get-response", win.data.appSettings.data);
+});
+
+//        #                                                     ##          #     #     #                                           #    
+//                                                             #  #         #     #                                                 #    
+// #  #  ##    ###          ##   ###          ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ###    ##   ###   
+// #  #   #    #  #        #  #  #  #        #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##     ####  ##     # ##   #    
+// ####   #    #  #        #  #  #  #        # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##           ##   ##     #    
+// ####  ###   #  #         ##   #  #         # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###          ###     ##     ##  
+//                                                 #     #                                          ###                                  
+win.on("appSettings-set", (newAppSettings) => {
+    console.log(newAppSettings);
+    win.data.appSettings.data.chat = newAppSettings.chat;
+    win.data.appSettings.save();
+});
+
+//    #       #       #                                             #      #                                     #        
+//   ###     #        #                                             #       #                                    #        
+//  # #     #      ## #   ###    ###   #   #  ## #    ###   # ##   ####      #          # ##    ###    ###    ## #  #   # 
+//   ###    #     #  ##  #   #  #   #  #   #  # # #  #   #  ##  #   #        #          ##  #  #   #      #  #  ##  #   # 
+//    # #   #     #   #  #   #  #      #   #  # # #  #####  #   #   #        #          #      #####   ####  #   #  #  ## 
+//   ###     #    #  ##  #   #  #   #  #  ##  # # #  #      #   #   #  #    #      #    #      #      #   #  #  ##   ## # 
+//    #       #    ## #   ###    ###    ## #  #   #   ###   #   #    ##    #      ###   #       ###    ####   ## #      # 
+//                                                                                 #                                #   # 
+//                                                                                                                   ###  
 $(document).ready(() => {
     var $inputbox = $("#inputbox"),
         patterns = {
             join: /^\/join #?([a-z0-9_]+)$/i,
             part: /^\/part$/i
-        },
-        setSize = ($el) => {
-            setTimeout(() => {
-                $el.css({height: "1px"});
-                $el.css({height: `${$el.prop("scrollHeight") + 2}px`});
-            }, 0);
         };
 
+    //        #                       #    #                                         #                                                 
+    //  # #                           #    #                                         #                                                 
+    // ##### ##    ###   ###   #  #  ###   ###    ##   #  #         ##   ###         # #    ##   #  #  ###   ###    ##    ###    ###   
+    //  # #   #    #  #  #  #  #  #   #    #  #  #  #   ##         #  #  #  #        ##    # ##  #  #  #  #  #  #  # ##  ##     ##     
+    // #####  #    #  #  #  #  #  #   #    #  #  #  #   ##         #  #  #  #        # #   ##     # #  #  #  #     ##      ##     ##   
+    //  # #  ###   #  #  ###    ###    ##  ###    ##   #  #         ##   #  #        #  #   ##     #   ###   #      ##   ###    ###    
+    //                   #                                                                        #    #                               
     // Setup input box resizing
     $inputbox.on("keypress", (ev) => {
         if (ev.keyCode === 13 && client.connected) {
@@ -181,12 +426,25 @@ $(document).ready(() => {
     $inputbox.on("keydown", () => setSize($inputbox));
     $inputbox.on("keyup", () => setSize($inputbox));
 
+    //             #                             ##                                         ##     #          #     
+    //  # #        #                              #                                          #                #     
+    // #####  ##   ###    ###  ###   ###    ##    #     ###          ##   ###          ##    #    ##     ##   # #   
+    //  # #  #     #  #  #  #  #  #  #  #  # ##   #    ##           #  #  #  #        #      #     #    #     ##    
+    // ##### #     #  #  # ##  #  #  #  #  ##     #      ##         #  #  #  #        #      #     #    #     # #   
+    //  # #   ##   #  #   # #  #  #  #  #   ##   ###   ###           ##   #  #         ##   ###   ###    ##   #  #  
     // Setup channel tabs.
     $("#channels").on("click", "a", (ev) => {
         ev.preventDefault();
         $(this).tab("show");
     });
 
+    //          #   #                 ##                                                                          #                    
+    //  # #     #                      #                                                                          #                    
+    // #####  ###  ##     ###   ###    #     ###  #  #         ##   ###         # #    ##   #  #   ###    ##    ###   ##   #  #  ###   
+    //  # #  #  #   #    ##     #  #   #    #  #  #  #        #  #  #  #        ####  #  #  #  #  ##     # ##  #  #  #  #  #  #  #  #  
+    // ##### #  #   #      ##   #  #   #    # ##   # #        #  #  #  #        #  #  #  #  #  #    ##   ##    #  #  #  #  ####  #  #  
+    //  # #   ###  ###   ###    ###   ###    # #    #          ##   #  #        #  #   ##    ###  ###     ##    ###   ##   ####  #  #  
+    //                          #                  #                                                                                   
     // Setup user list divider.
     $("#display").on("mousedown", "div.divider", (ev) => {
         var pageX = ev.pageX,

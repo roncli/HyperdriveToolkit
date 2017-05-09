@@ -1,11 +1,32 @@
-var fs = require("fs"),
+const fs = require("fs"),
     DataStore = require("../../../js/base/datastore"),
     Queue = require("../../../js/queue");
 
 require("../../../js/extensions");
 
+//  #####    #     ##          
+//  #               #          
+//  #       ##      #     ###  
+//  ####     #      #    #   # 
+//  #        #      #    ##### 
+//  #        #      #    #     
+//  #       ###    ###    ###  
+/**
+ * A class that represents data stored in a JSON file.
+ */
 class File extends DataStore {
-    constructor (filename) {
+
+    //                           #                       #                
+    //                           #                       #                
+    //  ##    ##   ###    ###   ###   ###   #  #   ##   ###    ##   ###   
+    // #     #  #  #  #  ##      #    #  #  #  #  #      #    #  #  #  #  
+    // #     #  #  #  #    ##    #    #     #  #  #      #    #  #  #     
+    //  ##    ##   #  #  ###      ##  #      ###   ##     ##   ##   #     
+    /**
+     * Creates a new data store based on a file.
+     * @param {string} filename The filename to use for the file.
+     */
+    constructor(filename) {
         super();
 
         this.filename = filename;
@@ -13,10 +34,30 @@ class File extends DataStore {
         this.fileQueue = new Queue();
     }
 
+    //    #         #          
+    //    #         #          
+    //  ###   ###  ###    ###  
+    // #  #  #  #   #    #  #  
+    // #  #  # ##   #    # ##  
+    //  ###   # #    ##   # #  
+    /**
+     * Returns the data in the data store.
+     * @return {object} The data in the data store.
+     */
     get data() {
         return this.dataStore;
     }
 
+    //  ###  #  #   ##   #  #   ##   
+    // #  #  #  #  # ##  #  #  # ##  
+    // #  #  #  #  ##    #  #  ##    
+    //  ###   ###   ##    ###   ##   
+    //    #                          
+    /**
+     * Queues a function.
+     * @param {function} fx The function to queue.
+     * @return {Promise} A promise that resolves when the function is complete.
+     */
     queue(fx) {
         var file = this;
 
@@ -30,6 +71,14 @@ class File extends DataStore {
         });
     }
 
+    //  ###    ###  # #    ##   
+    // ##     #  #  # #   # ##  
+    //   ##   # ##  # #   ##    
+    // ###     # #   #     ##   
+    /**
+     * Saves the data to a file.
+     * @return {Promise} A promise that resolves when the file is saved.
+     */
     save() {
         var file = this;
 
@@ -42,6 +91,7 @@ class File extends DataStore {
                             return;
                         }
                         
+                        super.emit("saved");
                         resolve();
                     });
                 }).then(outerResolve).catch(outerReject); // TODO: Handle rejection better.
@@ -49,6 +99,16 @@ class File extends DataStore {
         });
     }
 
+    // ##                   #  
+    //  #                   #  
+    //  #     ##    ###   ###  
+    //  #    #  #  #  #  #  #  
+    //  #    #  #  # ##  #  #  
+    // ###    ##    # #   ###  
+    /**
+     * Loads the data from a file.
+     * @return {Promise} A promise that resolves when the file is loaded.
+     */
     load() {
         var file = this;
 

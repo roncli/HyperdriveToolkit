@@ -1,4 +1,4 @@
-var http = require("http"),
+const http = require("http"),
     electron = require("electron"),
     Tmi = require("tmi.js"),
     TwitchApi = require("twitch-api"),
@@ -7,6 +7,13 @@ var http = require("http"),
 
 require("../../../js/extensions");
 
+// ###          #     #          #      ##          #                       #    ####               #     #                      ###                                  
+//  #                 #          #     #  #                                 #    #                  #                             #                                   
+//  #    #  #  ##    ###    ##   ###   #  #  ###   ##           ###   ##   ###   ###   # #    ##   ###   ##     ##    ##   ###    #    # #    ###   ###   ##    ###   
+//  #    #  #   #     #    #     #  #  ####  #  #   #          #  #  # ##   #    #     ####  #  #   #     #    #     #  #  #  #   #    ####  #  #  #  #  # ##  ##     
+//  #    ####   #     #    #     #  #  #  #  #  #   #     ##    ##   ##     #    #     #  #  #  #   #     #    #     #  #  #  #   #    #  #  # ##   ##   ##      ##   
+//  #    ####  ###     ##   ##   #  #  #  #  ###   ###    ##   #      ##     ##  ####  #  #   ##     ##  ###    ##    ##   #  #  ###   #  #   # #  #      ##   ###    
+//                                           #                  ###                                                                                 ###               
 TwitchApi.prototype.getEmoticonImages = function(callback) {
     this._executeRequest(
         {
@@ -17,7 +24,27 @@ TwitchApi.prototype.getEmoticonImages = function(callback) {
     );
 }
 
+//  #####           #     #            #     
+//    #                   #            #     
+//    #    #   #   ##    ####    ###   # ##  
+//    #    #   #    #     #     #   #  ##  # 
+//    #    # # #    #     #     #      #   # 
+//    #    # # #    #     #  #  #   #  #   # 
+//    #     # #    ###     ##    ###   #   # 
+/**
+ * A class to connect to Twitch chat.
+ */
 class Twitch extends Chat {
+    //                           #                       #                
+    //                           #                       #                
+    //  ##    ##   ###    ###   ###   ###   #  #   ##   ###    ##   ###   
+    // #     #  #  #  #  ##      #    #  #  #  #  #      #    #  #  #  #  
+    // #     #  #  #  #    ##    #    #     #  #  #      #    #  #  #     
+    //  ##    ##   #  #  ###      ##  #      ###   ##     ##   ##   #     
+    /**
+     * Creates an instance of Twitch chat.
+     * @param {object} settings The settings used to connect to Twitch.
+     */
     constructor (settings) {
         super();
 
@@ -26,10 +53,29 @@ class Twitch extends Chat {
         this.api = new TwitchApi(settings.twitch);
     }
 
+    //                                      #             #  
+    //                                      #             #  
+    //  ##    ##   ###   ###    ##    ##   ###    ##    ###  
+    // #     #  #  #  #  #  #  # ##  #      #    # ##  #  #  
+    // #     #  #  #  #  #  #  ##    #      #    ##    #  #  
+    //  ##    ##   #  #  #  #   ##    ##     ##   ##    ###  
+    /**
+     * Determines whether you are connected to Twitch.
+     * @return {bool} Whether you are connected.
+     */
     get connected() {
         return this.tmi.readyState() === "OPEN";
     }
 
+    //                                      #    
+    //                                      #    
+    //  ##    ##   ###   ###    ##    ##   ###   
+    // #     #  #  #  #  #  #  # ##  #      #    
+    // #     #  #  #  #  #  #  ##    #      #    
+    //  ##    ##   #  #  #  #   ##    ##     ##  
+    /**
+     * Connects to Twitch chat.
+     */
     connect() {
         var twitch = this;
 
@@ -105,7 +151,7 @@ class Twitch extends Chat {
                 } else {
                     span.text(text);
                 }
-                twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], span.html());
+                twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], span.html(), text);
             });
 
             twitch.tmi.on("join", (channel, username, self) => {
@@ -135,10 +181,31 @@ class Twitch extends Chat {
         });
     }
 
+    //              #    #                  #                   #  
+    //              #    #                                      #  
+    //  ###  #  #  ###   ###    ##   ###   ##    ####   ##    ###  
+    // #  #  #  #   #    #  #  #  #  #  #   #      #   # ##  #  #  
+    // # ##  #  #   #    #  #  #  #  #      #     #    ##    #  #  
+    //  # #   ###    ##  #  #   ##   #     ###   ####   ##    ###  
+    /**
+     * Determines whether you are authorized to connect to Twitch chat.
+     * @return {bool} Whether you are authorized.
+     */
     get authorized() {
         return !!(this.accessToken);
     }
 
+    //              #    #                  #                
+    //              #    #                                   
+    //  ###  #  #  ###   ###    ##   ###   ##    ####   ##   
+    // #  #  #  #   #    #  #  #  #  #  #   #      #   # ##  
+    // # ##  #  #   #    #  #  #  #  #      #     #    ##    
+    //  # #   ###    ##  #  #   ##   #     ###   ####   ##   
+    /**
+     * Authorizes you to use Twitch chat.
+     * @param {string} username The username to authorize with.
+     * @param {string} accessToken The access token to authorize with.
+     */
     authorize(username, accessToken) {
         var twitch = this;
         
@@ -202,18 +269,66 @@ class Twitch extends Chat {
         });
     }
 
+    //   #          #          
+                            
+    //   #    ##   ##    ###   
+    //   #   #  #   #    #  #  
+    //   #   #  #   #    #  #  
+    // # #    ##   ###   #  #  
+    //  #                      
+    /**
+     * Joins you to a channel.
+     * @param {string} channel The channel to join.
+     * @return {Promise} A promise that resolves when joining is successful.
+     */
     join(channel) {
         return this.tmi.join(channel);
     }
 
+    //                    #    
+    //                    #    
+    // ###    ###  ###   ###   
+    // #  #  #  #  #  #   #    
+    // #  #  # ##  #      #    
+    // ###    # #  #       ##  
+    // #                       
+    /**
+     * Parts you from a channel.
+     * @param {string} channel The channel to part.
+     * @return {Promise} A promise that resolves when parting is successful.
+     */
     part(channel) {
         return this.tmi.part(channel);
     }
 
+    //                       #  
+    //                       #  
+    //  ###    ##   ###    ###  
+    // ##     # ##  #  #  #  #  
+    //   ##   ##    #  #  #  #  
+    // ###     ##   #  #   ###  
+    /**
+     * Sends a command to a channel.
+     * @param {string} channel The channel to send the command to.
+     * @param {string} command The command to send.
+     * @return {Promise} A promise that resolves when sending is successful.
+     */
     send(channel, command) {
         return this.tmi.say(channel, command);
     }
 
+    //              #     ##    #                            
+    //              #    #  #   #                            
+    //  ###   ##   ###    #    ###   ###    ##    ###  # #   
+    // #  #  # ##   #      #    #    #  #  # ##  #  #  ####  
+    //  ##   ##     #    #  #   #    #     ##    # ##  #  #  
+    // #      ##     ##   ##     ##  #      ##    # #  #  #  
+    //  ###                                                  
+    /**
+     * Gets data for a stream.
+     * @param {string} channel The channel to get stream data for.
+     * @return {Promise} A promise that resolves when the stream data is sent.
+     */
     getStream(channel) {
         var api = this.api;
 
@@ -229,6 +344,18 @@ class Twitch extends Chat {
         });
     }
 
+    //              #     ##   #                             ##    
+    //              #    #  #  #                              #    
+    //  ###   ##   ###   #     ###    ###  ###   ###    ##    #    
+    // #  #  # ##   #    #     #  #  #  #  #  #  #  #  # ##   #    
+    //  ##   ##     #    #  #  #  #  # ##  #  #  #  #  ##     #    
+    // #      ##     ##   ##   #  #   # #  #  #  #  #   ##   ###   
+    //  ###                                                        
+    /**
+     * Gets data for a channel.
+     * @param {string} channel The channel to get data for.
+     * @return {Promise} A promise that resolves when the channel data is sent.
+     */
     getChannel(channel) {
         var api = this.api;
 
@@ -244,6 +371,18 @@ class Twitch extends Chat {
         });
     }
 
+    //              #     ##   #            #     #                       
+    //              #    #  #  #            #     #                       
+    //  ###   ##   ###   #     ###    ###  ###   ###    ##   ###    ###   
+    // #  #  # ##   #    #     #  #  #  #   #     #    # ##  #  #  ##     
+    //  ##   ##     #    #  #  #  #  # ##   #     #    ##    #       ##   
+    // #      ##     ##   ##   #  #   # #    ##    ##   ##   #     ###    
+    //  ###                                                               
+    /**
+     * Gets the list of chatters for a channel.
+     * @param {string} channel The chatter to get the list of chatters for.
+     * @return {Promise} A promise that resolves when the chatters are sent.
+     */
     getChatters(channel) {
         return new Promise((resolve, reject) => {
             http.get("http://tmi.twitch.tv/group/user/" + channel + "/chatters", (res) => {

@@ -1,0 +1,25 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true,
+        "jquery": true,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "impliedStrict": true
+        },
+        "sourceType": "module",
+        "ecmaVersion": 6
+    },
+    "rules": {
+        "constructor-super": "warn",
+        "no-const-assign": "warn",
+        "no-this-before-super": "warn",
+        "no-undef": "warn",
+        "no-unreachable": "warn",
+        "no-unused-vars": "warn",
+        "semi": "warn",
+        "valid-typeof": "warn"
+    }
+}
