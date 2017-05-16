@@ -3,71 +3,129 @@
         <script src="../node_modules/jquery/dist/jquery.min.js"></script>
         <script>$ = jQuery = require("jquery")</script>
         <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="../node_modules/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js"></script>
         <script src="js/settings.js"></script>
         <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"></link>
         <link href="../node_modules/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet"></link>
+        <link href="../node_modules/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css" rel="stylesheet"></link>
         <link href="css/settings.css" rel="stylesheet"></link>
     </head>
-    <body>
-        <ul id="categories" class="nav nav-tabs">
-            <li id="tab-chat" class="active"><a data-toggle="tab" href="#chat">Chat</a></li>
-            <!--<li id="tab-huh"><a data-toggle="tab" href="#huh">Some other settings</a></li>-->
-        </ul>
-        <div id="display" class="tab-content panel">
-            <div role="tabpanel" class="tab-pane active" id="chat">
-                <div class="table-row">
-                    <div class="caption">Font:</div>
-                    <div class="input"><input type="text" id="font-face" /></div>
+    <body style="user-select: none;">
+        <div id="settings">
+            <ul id="categories" class="nav nav-tabs">
+                <li id="tab-chat" class="active"><a data-toggle="tab" href="#chat">Chat</a></li>
+                <!--<li id="tab-huh"><a data-toggle="tab" href="#huh">Some other settings</a></li>-->
+            </ul>
+            <div id="display" class="tab-content panel form-group form-group-sm">
+                <div class="settings-pane panel panel-default">
+                    <div role="tabpanel" class="tab-pane active" id="chat">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div>Chat Foreground Color:</div>
+                                    <div id="colors-chat-foreground" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>Chat Background Color:</div>
+                                    <div id="colors-chat-background" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>Chat Info Text Color:</div>
+                                    <div id="colors-chat-info" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>Chat Join Text Color:</div>
+                                    <div id="colors-chat-join" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>Chat Part Text Color:</div>
+                                    <div id="colors-chat-part" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>Chat Highlight Text Color:</div>
+                                    <div id="colors-chat-highlight" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div>Font:</div>
+                                    <div>
+                                        <select id="font-face" class="form-control"></select>
+                                    </div><br />
+                                    <div>Font Size:</div>
+                                    <div>
+                                        <select id="font-size" class="form-control">
+                                            <option value="8">8 px</option>
+                                            <option value="9">9 px</option>
+                                            <option value="10">10 px</option>
+                                            <option value="11">11 px</option>
+                                            <option value="12">12 px</option>
+                                            <option value="13">13 px</option>
+                                            <option value="14">14 px</option>
+                                            <option value="15">15 px</option>
+                                            <option value="16">16 px</option>
+                                            <option value="18">18 px</option>
+                                            <option value="20">20 px</option>
+                                            <option value="22">22 px</option>
+                                            <option value="24">24 px</option>
+                                            <option value="26">26 px</option>
+                                            <option value="28">28 px</option>
+                                            <option value="30">30 px</option>
+                                            <option value="32">32 px</option>
+                                            <option value="36">36 px</option>
+                                            <option value="48">48 px</option>
+                                            <option value="60">60 px</option>
+                                            <option value="72">72 px</option>
+                                        </select>
+                                    </div><br />
+                                    <div>Input Text Color:</div>
+                                    <div id="colors-input-foreground" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>Input Background Color:</div>
+                                    <div id="colors-input-background" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>User List Text Color:</div>
+                                    <div id="colors-userlist-foreground" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div><br />
+                                    <div>User List Background Color:</div>
+                                    <div id="colors-userlist-background" data-format="hex" class="input-group colorpicker-component">
+                                        <input type="text" class="form-control" />
+                                        <span class="input-group-addon"><i></i></span>
+                                    </div>
+                                </div>
+                            </div><br />
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            <input type="checkbox" id="chat-timestamps">
+                                        </span>
+                                        <span class="input-group-addon" style="width: 100%; text-align: left;"><label for="chat-timestamps">Chat Timestamps</label></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="table-row">
-                    <div class="caption">Size:</div>
-                    <div class="input"><input type="text" id="font-size" size="2" />px</div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Chat Default Text Color:</div>
-                    <div class="input"><input type="text" id="colors-chat-foreground" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Chat Background Color:</div>
-                    <div class="input"><input type="text" id="colors-chat-background" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Chat Info Text Color:</div>
-                    <div class="input"><input type="text" id="colors-chat-info" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Chat Join Text Color:</div>
-                    <div class="input"><input type="text" id="colors-chat-join" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Chat Part Text Color:</div>
-                    <div class="input"><input type="text" id="colors-chat-part" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Chat Highlight Text Color:</div>
-                    <div class="input"><input type="text" id="colors-chat-highlight" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Input Text Color:</div>
-                    <div class="input"><input type="text" id="colors-input-foreground" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">Input Background Color:</div>
-                    <div class="input"><input type="text" id="colors-input-background" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">User List Text Color:</div>
-                    <div class="input"><input type="text" id="colors-userlist-foreground" /></div>
-                </div>
-                <div class="table-row">
-                    <div class="caption">User List Background Color:</div>
-                    <div class="input"><input type="text" id="colors-userlist-background" /></div>
-                </div>
+                <!--<div role="tabpanel" class="tab-pane" id="huh">
+                    I don't know what I am! /o\
+                </div>-->
             </div>
-            <!--<div role="tabpanel" class="tab-pane" id="huh">
-                I don't know what I am! /o\
-            </div>-->
+            <div id="buttons">
+                <button id="save" class="btn btn-default">Save Settings</button>
+            </div>
         </div>
-        <button id="save">Save Settings</button>
     </body>
 </html>

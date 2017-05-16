@@ -3,7 +3,8 @@ const http = require("http"),
     Tmi = require("tmi.js"),
     TwitchApi = require("twitch-api"),
     Chat = require("../../../js/base/chat"),
-    rangeRegex = /^([0-9]+)-([0-9]+)$/;
+    rangeRegex = /^([0-9]+)-([0-9]+)$/,
+    defaultColors = ["Blue", "Coral", "DodgerBlue", "SpringGreen", "YellowGreen", "Green", "OrangeRed", "Red", "GoldenRod", "HotPink", "CadetBlue", "SeaGreen", "Chocolate", "BlueViolet", "Firebrick"];
 
 require("../../../js/extensions");
 
@@ -151,6 +152,11 @@ class Twitch extends Chat {
                 } else {
                     span.text(text);
                 }
+
+                if (!userstate.color) {
+                    userstate.color = defaultColors[(userstate.username.charCodeAt(0) + userstate.username.charCodeAt(userstate.username.length - 1)) % defaultColors.length];
+                }
+
                 twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], span.html(), text);
             });
 

@@ -1,4 +1,5 @@
-var electron = require("electron"),
+const electron = require("electron"),
+    tinycolor = require("tinycolor2"),
     remote = electron.remote,
     app = remote.app,
     win = remote.getCurrentWindow(),
@@ -6,8 +7,9 @@ var electron = require("electron"),
     Twitch = require("./modules/chat/twitch"), // TODO: Load modules
     settings = require("./js/apiSettings"),
     client = new Twitch(settings),
-    File = require("./modules/datastore/file"),
-    channels = {},
+    File = require("./modules/datastore/file");
+
+var channels = {},
 
     //              #    ###         #     
     //              #     #          #     
@@ -179,10 +181,20 @@ win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #    
 //                                                                                                    ###                    
 client.on("message", (channel, username, usercolor, displayname, html, text) => {
-    var channelName = channel.substring(1);
+    var color = tinycolor(usercolor),
+        background = tinycolor(win.data.appSettings.data.chat.colors.chat.background),
+        difference = background.getBrightness() - color.getBrightness(),
+        channelName = channel.substring(1),
+        date = new Date();
+
+    if (difference >= 0 && difference < 50) {
+        usercolor = color.darken(50);
+    } else if (difference < 0 && difference > -50) {
+        usercolor = color.brighten(50);
+    }
 
     if (text.indexOf(win.data.userSettings.data.twitch.username) === -1) {
-        $(`#channel-${channelName} .text`).append(`<b style="color: ${usercolor}">${displayname}</b>: ${html}<br />`);
+        $(`#channel-${channelName} .text`).append(`${win.data.appSettings.data.chat.timestamps ? `[${`0${date.getHours()}`.substr(-2)}:${`0${date.getMinutes()}`.substr(-2)}:${`0${date.getSeconds()}`.substr(-2)}` : ""}] <b style="color: ${usercolor}">${displayname}</b>: ${html}<br />`);
     } else {
         $(`#channel-${channelName} .text`).append(`<b style="color: ${usercolor}">${displayname}</b>: <span class="highlight">${html}</span><br />`);
     }
@@ -369,7 +381,6 @@ win.on("appSettings-get", (remoteWin) => {
 // ####  ###   #  #         ##   #  #         # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###          ###     ##     ##  
 //                                                 #     #                                          ###                                  
 win.on("appSettings-set", (newAppSettings) => {
-    console.log(newAppSettings);
     win.data.appSettings.data.chat = newAppSettings.chat;
     win.data.appSettings.save();
 });
