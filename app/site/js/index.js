@@ -10,100 +10,9 @@ const electron = require("electron"),
     File = require("./modules/datastore/file");
 
 var channels = {},
+    profileWin;
 
-    //              #    ###         #     
-    //              #     #          #     
-    //  ###   ##   ###    #     ###  ###   
-    // #  #  # ##   #     #    #  #  #  #  
-    //  ##   ##     #     #    # ##  #  #  
-    // #      ##     ##   #     # #  ###   
-    //  ###                                
-    getTab = (username) => {
-        return `<li id="tab-${username}" class="channel-tab"><a data-toggle="tab" href="#channel-${username}">#${username}</a></li>`;
-    },
-
-    //              #    ###                     ##    
-    //              #    #  #                     #    
-    //  ###   ##   ###   #  #   ###  ###    ##    #    
-    // #  #  # ##   #    ###   #  #  #  #  # ##   #    
-    //  ##   ##     #    #     # ##  #  #  ##     #    
-    // #      ##     ##  #      # #  #  #   ##   ###   
-    //  ###                                            
-    getPanel = (username) => {
-        return `<div role="tabpanel" class="tab-pane" id="channel-${username}">
-    <div class="chat">
-        <div class="topic"></div>
-        <div class="text"></div>
-    </div>
-    <div class="divider"></div>
-    <div class="users"></div>
-</div>`;
-    },
-
-    //                #         #           ##    #                            
-    //                #         #          #  #   #                            
-    // #  #  ###    ###   ###  ###    ##    #    ###   ###    ##    ###  # #   
-    // #  #  #  #  #  #  #  #   #    # ##    #    #    #  #  # ##  #  #  ####  
-    // #  #  #  #  #  #  # ##   #    ##    #  #   #    #     ##    # ##  #  #  
-    //  ###  ###    ###   # #    ##   ##    ##     ##  #      ##    # #  #  #  
-    //       #                                                                 
-    updateStream = (channel) => {
-        var channelName = channel.substring(1);
-        client.getStream(channelName).then((stream) => {
-            if (stream) {
-                channels[channel].stream = stream;
-                channels[channel].channel = stream.channel;
-                updateTitle(channel);
-            } else {
-                delete channels[channel].stream;
-                client.getChannel(channelName).then((channelData) => {
-                    channels[channel].channel = channelData;
-                    updateTitle(channel);
-                });
-            }
-        });
-
-        client.getChatters(channelName).then((chatters) => {
-            channels[channel].chatters = chatters;
-            updateTitle(channel);
-        });
-    },
-
-    //              #    ###    #                 ##    #                      
-    //              #     #                      #  #                          
-    //  ###   ##   ###    #    ##    # #    ##    #    ##    ###    ##    ##   
-    // #  #  # ##   #     #     #    ####  # ##    #    #    #  #  #     # ##  
-    //  ##   ##     #     #     #    #  #  ##    #  #   #    #  #  #     ##    
-    // #      ##     ##   #    ###   #  #   ##    ##   ###   #  #   ##    ##   
-    //  ###                                                                    
-    getTimeSince = (time) => {
-        var diff = new Date().getTime() - new Date(time).getTime();
-
-        return `${Math.floor(diff / 3600000)}:${("0" + Math.floor(diff % 3600000 / 60000)).slice(-2)}`;
-    },
-
-    //                #         #          ###    #     #    ##          
-    //                #         #           #           #     #          
-    // #  #  ###    ###   ###  ###    ##    #    ##    ###    #     ##   
-    // #  #  #  #  #  #  #  #   #    # ##   #     #     #     #    # ##  
-    // #  #  #  #  #  #  # ##   #    ##     #     #     #     #    ##    
-    //  ###  ###    ###   # #    ##   ##    #    ###     ##  ###    ##   
-    //       #                                                           
-    updateTitle = (channel) => {
-        var channelName = channel.substring(1);
-        $(`#channel-${channelName} .topic`).html(
-`<div style="position: relative;">
-    ${channels[channel].channel && channels[channel].channel.profile_banner ? `<div class="topic-background" style="background-image: url('${channels[channel].channel.profile_banner}');"></div>` : ""}
-    <div class="topic-foreground">
-        ${channels[channel].channel && channels[channel].channel.logo ? `<img src="${channels[channel].channel.logo}" class="topic-logo">` : ""}
-        ${channels[channel].channel ? `<div class="topic-text">
-            ${channel} - ${channels[channel].channel.status} (${channels[channel].channel.game})<br />
-            ${channels[channel].stream ? `Online: ${getTimeSince(channels[channel].stream.created_at)} - Viewers: ${channels[channel].stream.viewers} - ` : ""}${channels[channel].chatters ? `Chatters: ${channels[channel].chatters.chatter_count} - ` : ""}Followers: ${channels[channel].channel.followers} - Views: ${channels[channel].channel.views}
-        </div>` : ""}
-    </div>
-</div>`);
-    },
-
+class Index {
     //       #                              ##                 
     //       #                             #  #                
     //  ##   ###    ###  ###    ###   ##   #      ###    ###   
@@ -112,7 +21,7 @@ var channels = {},
     //  ##   #  #   # #  #  #  #      ##    ##   ###    ###    
     //                          ###                            
     // Based on http://stackoverflow.com/a/19826393/214137
-    changeCss = (cssName, cssValue) => {
+    static changeCss(cssName, cssValue) {
         var cssMainContainer = $("#css-modifier-container"),
             classContainer = cssMainContainer.find(`div[data-class="${cssName}"]`);
 
@@ -131,7 +40,72 @@ var channels = {},
 
         // Replace style in the css div.
         classContainer.html(`<style>${cssName}{${cssValue}}</style>`);
-    },
+    }
+
+    //              #    ###                     ##    
+    //              #    #  #                     #    
+    //  ###   ##   ###   #  #   ###  ###    ##    #    
+    // #  #  # ##   #    ###   #  #  #  #  # ##   #    
+    //  ##   ##     #    #     # ##  #  #  ##     #    
+    // #      ##     ##  #      # #  #  #   ##   ###   
+    //  ###                                            
+    static getPanel(username) {
+        return `<div role="tabpanel" class="tab-pane" id="channel-${username}">
+    <div class="chat">
+        <div class="topic"></div>
+        <div class="text"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="users"></div>
+</div>`;
+    }
+
+    //              #    ###         #     
+    //              #     #          #     
+    //  ###   ##   ###    #     ###  ###   
+    // #  #  # ##   #     #    #  #  #  #  
+    //  ##   ##     #     #    # ##  #  #  
+    // #      ##     ##   #     # #  ###   
+    //  ###                                
+    static getTab(username) {
+        return `<li id="tab-${username}" class="channel-tab"><a data-toggle="tab" href="#channel-${username}">#${username}</a></li>`;
+    }
+
+    //              #    ###    #                 ##    #                      
+    //              #     #                      #  #                          
+    //  ###   ##   ###    #    ##    # #    ##    #    ##    ###    ##    ##   
+    // #  #  # ##   #     #     #    ####  # ##    #    #    #  #  #     # ##  
+    //  ##   ##     #     #     #    #  #  ##    #  #   #    #  #  #     ##    
+    // #      ##     ##   #    ###   #  #   ##    ##   ###   #  #   ##    ##   
+    //  ###                                                                    
+    static getTimeSince(time) {
+        var diff = new Date().getTime() - new Date(time).getTime();
+
+        return `${Math.floor(diff / 3600000)}:${("0" + Math.floor(diff % 3600000 / 60000)).slice(-2)}`;
+    }
+
+    // #      #          ##    ####                       #        
+    // #      #           #    #                          #        
+    // ###   ###   # #    #    ###   ###    ##    ##    ###   ##   
+    // #  #   #    ####   #    #     #  #  #     #  #  #  #  # ##  
+    // #  #   #    #  #   #    #     #  #  #     #  #  #  #  ##    
+    // #  #    ##  #  #  ###   ####  #  #   ##    ##    ###   ##   
+    static htmlEncode(str) {
+        return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+    }
+
+    //               #     ##    #                
+    //               #    #  #                    
+    //  ###    ##   ###    #    ##    ####   ##   
+    // ##     # ##   #      #    #      #   # ##  
+    //   ##   ##     #    #  #   #     #    ##    
+    // ###     ##     ##   ##   ###   ####   ##   
+    static setSize($el) {
+        setTimeout(() => {
+            $el.css({height: "1px"});
+            $el.css({height: `${$el.prop("scrollHeight") + 2}px`});
+        }, 0);
+    }
 
     //               #     #     #                        ##   #                                #  
     //               #     #                             #  #  #                                #  
@@ -140,39 +114,100 @@ var channels = {},
     //   ##   ##     #     #     #    #  #   ##     ##   #  #  #  #  # ##  #  #   ##   ##    #  #  
     // ###     ##     ##    ##  ###   #  #  #     ###     ##   #  #   # #  #  #  #      ##    ###  
     //                                       ###                                  ###              
-    settingsChanged = () => {
-        changeCss("#display", `font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`); // TODO: Potentially have a max size for title, input bo
-        changeCss("#display div.chat", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; background-color: ${win.data.appSettings.data.chat.colors.chat.background};`);
+    static settingsChanged() {
+        this.changeCss("#display", `font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`); // TODO: Potentially have a max size for title, input bo
+        this.changeCss("#display div.chat", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; background-color: ${win.data.appSettings.data.chat.colors.chat.background};`);
         //changeCss("#display div.chat .text", `font-size: ${win.data.appSettings.data.chat.font.size}px;`);
-        changeCss("#display div.chat .info", `color: ${win.data.appSettings.data.chat.colors.chat.info};`);
-        changeCss("#display div.chat .join", `color: ${win.data.appSettings.data.chat.colors.chat.join};`);
-        changeCss("#display div.chat .part", `color: ${win.data.appSettings.data.chat.colors.chat.part};`);
-        changeCss("#display div.chat .highlight", `color: ${win.data.appSettings.data.chat.colors.chat.highlight};`);
-        changeCss("#inputbox", `color: ${win.data.appSettings.data.chat.colors.input.foreground}; background-color: ${win.data.appSettings.data.chat.colors.input.background}; font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`);
-        changeCss("#display div.users", `color: ${win.data.appSettings.data.chat.colors.userList.foreground}; background-color: ${win.data.appSettings.data.chat.colors.userList.background};`);
-        setSize($("#inputbox"));
-    },
+        this.changeCss("#display div.chat .info", `color: ${win.data.appSettings.data.chat.colors.chat.info};`);
+        this.changeCss("#display div.chat .join", `color: ${win.data.appSettings.data.chat.colors.chat.join};`);
+        this.changeCss("#display div.chat .part", `color: ${win.data.appSettings.data.chat.colors.chat.part};`);
+        this.changeCss("#display div.chat .highlight", `color: ${win.data.appSettings.data.chat.colors.chat.highlight};`);
+        this.changeCss("#inputbox", `color: ${win.data.appSettings.data.chat.colors.input.foreground}; background-color: ${win.data.appSettings.data.chat.colors.input.background}; font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`);
+        this.changeCss("#display div.users", `color: ${win.data.appSettings.data.chat.colors.userList.foreground}; background-color: ${win.data.appSettings.data.chat.colors.userList.background};`);
+        this.setSize($("#inputbox"));
+    }
 
+    //  #     #                        #                      
+    //  #                              #                      
+    // ###   ##    # #    ##    ###   ###    ###  # #   ###   
+    //  #     #    ####  # ##  ##      #    #  #  ####  #  #  
+    //  #     #    #  #  ##      ##    #    # ##  #  #  #  #  
+    //   ##  ###   #  #   ##   ###      ##   # #  #  #  ###   
+    //                                                  #     
+    static timestamp() {
+        var date = new Date();
+        return `${win.data.appSettings.data.chat.timestamps ? `[${`0${date.getHours()}`.substr(-2)}:${`0${date.getMinutes()}`.substr(-2)}:${`0${date.getSeconds()}`.substr(-2)}` : ""}] `;
+    }
 
-    //               #     ##    #                
-    //               #    #  #                    
-    //  ###    ##   ###    #    ##    ####   ##   
-    // ##     # ##   #      #    #      #   # ##  
-    //   ##   ##     #    #  #   #     #    ##    
-    // ###     ##     ##   ##   ###   ####   ##   
-    setSize = ($el) => {
-        setTimeout(() => {
-            $el.css({height: "1px"});
-            $el.css({height: `${$el.prop("scrollHeight") + 2}px`});
-        }, 0);
-    };
+    //                #         #           ##    #                            
+    //                #         #          #  #   #                            
+    // #  #  ###    ###   ###  ###    ##    #    ###   ###    ##    ###  # #   
+    // #  #  #  #  #  #  #  #   #    # ##    #    #    #  #  # ##  #  #  ####  
+    // #  #  #  #  #  #  # ##   #    ##    #  #   #    #     ##    # ##  #  #  
+    //  ###  ###    ###   # #    ##   ##    ##     ##  #      ##    # #  #  #  
+    //       #                                                                 
+    static updateStream(channel) {
+        var channelName = channel.substring(1);
+        client.getStream(channelName).then((stream) => {
+            if (stream) {
+                channels[channel].stream = stream;
+                channels[channel].channel = stream.channel;
+                Index.updateTitle(channel);
+            } else {
+                delete channels[channel].stream;
+                client.getChannel(channelName).then((channelData) => {
+                    channels[channel].channel = channelData;
+                    Index.updateTitle(channel);
+                });
+            }
+        });
+
+        client.getChatters(channelName).then((chatters) => {
+            channels[channel].chatters = chatters;
+            Index.updateTitle(channel);
+        });
+    }
+
+    //                #         #          ###    #     #    ##          
+    //                #         #           #           #     #          
+    // #  #  ###    ###   ###  ###    ##    #    ##    ###    #     ##   
+    // #  #  #  #  #  #  #  #   #    # ##   #     #     #     #    # ##  
+    // #  #  #  #  #  #  # ##   #    ##     #     #     #     #    ##    
+    //  ###  ###    ###   # #    ##   ##    #    ###     ##  ###    ##   
+    //       #                                                           
+    static updateTitle(channel) {
+        var channelName = channel.substring(1);
+
+        $(`#channel-${channelName} .topic`).html(
+`<div style="position: relative;">
+    ${channels[channel].channel && channels[channel].channel.profile_banner ? `<div class="topic-background" style="background-image: url('${channels[channel].channel.profile_banner}');"></div>` : ""}
+    <div class="topic-foreground">
+        ${channels[channel].channel && channels[channel].channel.logo ? `<img src="${channels[channel].channel.logo}" class="topic-logo">` : ""}
+        ${channels[channel].channel ? `<div class="topic-text">
+            ${channel}${channels[channel].channel.status ? ` - ` : ""}${this.htmlEncode(channels[channel].channel.status)} ${channels[channel].channel.game ? `(${this.htmlEncode(channels[channel].channel.game)})` : ""}<br />
+            ${channels[channel].stream ? `Online: ${this.getTimeSince(channels[channel].stream.created_at)} - Viewers: ${channels[channel].stream.viewers} - ` : ""}${channels[channel].chatters ? `Chatters: ${channels[channel].chatters.chatter_count} - ` : ""}Followers: ${channels[channel].channel.followers} - Views: ${channels[channel].channel.views}
+        </div>` : ""}
+    </div>
+</div>`);
+    }
+
+    //                          #      #          #     
+    //                          #                 #     
+    // #  #   ###    ##   ###   #     ##    ###   # #   
+    // #  #  ##     # ##  #  #  #      #    #  #  ##    
+    // #  #    ##   ##    #     #      #    #  #  # #   
+    //  ###  ###     ##   #     ####  ###   #  #  #  #  
+    static userLink(channel, username, displayname) {
+        return `<a class="userlink" data-username="${username}", data-channel="${channel}">${displayname || username}</a>`;
+    }
+}
 
 if (!win.data) {
     win.data = {};
 }
 win.data.userSettings = new File(path.join(app.getPath("userData"), "userSettings.js")),
 win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.js")),
-
+// TODO: Figure out how to do timeouts, bans, purges
 //       ##     #                 #                        #    # #                                               # #   #    
 //        #                       #                       #     # #                                               # #    #   
 //  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #   
@@ -184,8 +219,7 @@ client.on("message", (channel, username, usercolor, displayname, html, text) => 
     var color = tinycolor(usercolor),
         background = tinycolor(win.data.appSettings.data.chat.colors.chat.background),
         difference = background.getBrightness() - color.getBrightness(),
-        channelName = channel.substring(1),
-        date = new Date();
+        channelName = channel.substring(1);
 
     if (difference >= 0 && difference < 50) {
         usercolor = color.darken(50);
@@ -194,9 +228,9 @@ client.on("message", (channel, username, usercolor, displayname, html, text) => 
     }
 
     if (text.indexOf(win.data.userSettings.data.twitch.username) === -1) {
-        $(`#channel-${channelName} .text`).append(`${win.data.appSettings.data.chat.timestamps ? `[${`0${date.getHours()}`.substr(-2)}:${`0${date.getMinutes()}`.substr(-2)}:${`0${date.getSeconds()}`.substr(-2)}` : ""}] <b style="color: ${usercolor}">${displayname}</b>: ${html}<br />`);
+        $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}<br />`);
     } else {
-        $(`#channel-${channelName} .text`).append(`<b style="color: ${usercolor}">${displayname}</b>: <span class="highlight">${html}</span><br />`);
+        $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span><br />`);
     }
 });
 
@@ -212,17 +246,17 @@ client.on("join", (channel, username, self) => {
     if (self) {
         channels[channel] = {
             users: [],
-            interval: setInterval(() => updateStream(channel), 60000)
+            interval: setInterval(() => Index.updateStream(channel), 60000)
         };
-        $("#channels").append(getTab(channelName));
-        $("#display").append(getPanel(channelName));
+        $("#channels").append(Index.getTab(channelName));
+        $("#display").append(Index.getPanel(channelName));
         if (Object.keys(channels).length === 1) {
             $(`#tab-${channelName} > a`).tab("show");
         }
-        updateStream(channel);
+        Index.updateStream(channel);
     }
     channels[channel].users.push(username);
-    $(`#channel-${channelName} .text`).append(`<span class="join">${(self ? "You have" : `${username} has`)} joined ${channel}</span><br />`);
+    $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="join">${(self ? "You have" : `${Index.userLink(channel, username)} has`)} joined ${channel}</span><br />`);
     $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
 });
 
@@ -246,7 +280,7 @@ client.on("part", (channel, username, self) => {
         }
     } else {
         channels[channel].users.splice(channels[channel].users.indexOf(username), 1);
-        $(`#channel-${channelName} .text`).append(`<span class="part">${`${username}`} has left ${channel}</span><br />`);
+        $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="part">${`${Index.userLink(channel, username)}`} has left ${channel}</span><br />`);
         $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
     }
 });
@@ -259,7 +293,7 @@ client.on("part", (channel, username, self) => {
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##    ###         #    
 client.on("mod", (channel, username) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`<span class="info">${username} is now a moderator of ${channel}</span><br />`);
+    $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="info">${Index.userLink(channel, username)} is now a moderator of ${channel}</span><br />`);
 });
 
 //       ##     #                 #                        #    # #                             #   # #   #    
@@ -270,7 +304,7 @@ client.on("mod", (channel, username) => {
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ###  #  #  #  #   ##    ###         #    
 client.on("unmod", (channel, username) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`<span class="info">${username} is no longer a moderator of ${channel}</span><br />`);
+    $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="info">${Index.userLink(channel, username)} is no longer a moderator of ${channel}</span><br />`);
 });
 
 //       ##     #                 #                        #    # #                       #               #     #          ##            # #   #    
@@ -348,7 +382,7 @@ win.data.appSettings.load().then(() => {
         };
     }
 
-    settingsChanged();
+    Index.settingsChanged();
 });
 
 //                    ##          #     #     #                                                                           #  
@@ -359,7 +393,7 @@ win.data.appSettings.load().then(() => {
 //  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###           ##   #  #        ###     # #   #     ##    ###  
 //       #     #                                          ###                                                                
 win.data.appSettings.on("saved", () => {
-    settingsChanged();
+    Index.settingsChanged();
 });
 
 //        #                                                     ##          #     #     #                                          #    
@@ -430,32 +464,31 @@ $(document).ready(() => {
         }
     });
 
-    $inputbox.on("change", () => setSize($inputbox));
-    $inputbox.on("cut", () => setSize($inputbox));
-    $inputbox.on("paste", () => setSize($inputbox));
-    $inputbox.on("drop", () => setSize($inputbox));
-    $inputbox.on("keydown", () => setSize($inputbox));
-    $inputbox.on("keyup", () => setSize($inputbox));
+    $inputbox.on("change", () => Index.setSize($inputbox));
+    $inputbox.on("cut", () => Index.setSize($inputbox));
+    $inputbox.on("paste", () => Index.setSize($inputbox));
+    $inputbox.on("drop", () => Index.setSize($inputbox));
+    $inputbox.on("keydown", () => Index.setSize($inputbox));
+    $inputbox.on("keyup", () => Index.setSize($inputbox));
 
-    //             #                             ##                                         ##     #          #     
-    //  # #        #                              #                                          #                #     
-    // #####  ##   ###    ###  ###   ###    ##    #     ###          ##   ###          ##    #    ##     ##   # #   
-    //  # #  #     #  #  #  #  #  #  #  #  # ##   #    ##           #  #  #  #        #      #     #    #     ##    
-    // ##### #     #  #  # ##  #  #  #  #  ##     #      ##         #  #  #  #        #      #     #    #     # #   
-    //  # #   ##   #  #   # #  #  #  #  #   ##   ###   ###           ##   #  #         ##   ###   ###    ##   #  #  
+    //             #                             ##                                                           ##     #          #     
+    //  # #        #                              #                                                            #                #     
+    // #####  ##   ###    ###  ###   ###    ##    #     ###                ###         ##   ###          ##    #    ##     ##   # #   
+    //  # #  #     #  #  #  #  #  #  #  #  # ##   #    ##                 #  #        #  #  #  #        #      #     #    #     ##    
+    // ##### #     #  #  # ##  #  #  #  #  ##     #      ##          ##   # ##        #  #  #  #        #      #     #    #     # #   
+    //  # #   ##   #  #   # #  #  #  #  #   ##   ###   ###           ##    # #         ##   #  #         ##   ###   ###    ##   #  #  
     // Setup channel tabs.
     $("#channels").on("click", "a", (ev) => {
         ev.preventDefault();
         $(this).tab("show");
     });
 
-    //          #   #                 ##                                                                          #                    
-    //  # #     #                      #                                                                          #                    
-    // #####  ###  ##     ###   ###    #     ###  #  #         ##   ###         # #    ##   #  #   ###    ##    ###   ##   #  #  ###   
-    //  # #  #  #   #    ##     #  #   #    #  #  #  #        #  #  #  #        ####  #  #  #  #  ##     # ##  #  #  #  #  #  #  #  #  
-    // ##### #  #   #      ##   #  #   #    # ##   # #        #  #  #  #        #  #  #  #  #  #    ##   ##    #  #  #  #  ####  #  #  
-    //  # #   ###  ###   ###    ###   ###    # #    #          ##   #  #        #  #   ##    ###  ###     ##    ###   ##   ####  #  #  
-    //                          #                  #                                                                                   
+    //    #   #                   #   #           #       #                                                                        #                    
+    //    #                       #                       #                                                                        #                    
+    //  ###  ##    # #          ###  ##    # #   ##     ###   ##   ###          ##   ###         # #    ##   #  #   ###    ##    ###   ##   #  #  ###   
+    // #  #   #    # #         #  #   #    # #    #    #  #  # ##  #  #        #  #  #  #        ####  #  #  #  #  ##     # ##  #  #  #  #  #  #  #  #  
+    // #  #   #    # #    ##   #  #   #    # #    #    #  #  ##    #           #  #  #  #        #  #  #  #  #  #    ##   ##    #  #  #  #  ####  #  #  
+    //  ###  ###    #     ##    ###  ###    #    ###    ###   ##   #            ##   #  #        #  #   ##    ###  ###     ##    ###   ##   ####  #  #  
     // Setup user list divider.
     $("#display").on("mousedown", "div.divider", (ev) => {
         var pageX = ev.pageX,
@@ -472,5 +505,72 @@ $(document).ready(() => {
         });
 
         ev.preventDefault();
+    });
+
+    //                                      ##     #          #                                   ##     #          #     
+    //                                       #                #                                    #                #     
+    //  ###        #  #   ###    ##   ###    #    ##    ###   # #          ##   ###          ##    #    ##     ##   # #   
+    // #  #        #  #  ##     # ##  #  #   #     #    #  #  ##          #  #  #  #        #      #     #    #     ##    
+    // # ##   ##   #  #    ##   ##    #      #     #    #  #  # #         #  #  #  #        #      #     #    #     # #   
+    //  # #   ##    ###  ###     ##   #     ###   ###   #  #  #  #         ##   #  #         ##   ###   ###    ##   #  #  
+    $("#display").on("click", "a.userlink", (ev) => {
+        var data = $(ev.target).data();
+
+        if (profileWin) {
+            profileWin.emit("profile-set", data.channel, data.username);
+        } else {
+            profileWin = new electron.remote.BrowserWindow({width: 800, height: 600, title: `Hyperdrive Toolkit - Profile - ${data.username} on ${data.channel}`});
+
+            profileWin.on("profile-get", () => {
+                profileWin.emit("profile-set", data.channel, data.username);
+            });
+
+            profileWin.loadURL(`file://${__dirname}/profile.htm`, {
+                postData: [{
+                    type: "rawData",
+                    bytes: Buffer.from(`channel=${data.channel}&username=${data.username}`)
+                }],
+                extraHeaders: "Content-Type: application/x-www-form-urlencoded"
+            });
+            profileWin.setMenu(null);
+            profileWin.toggleDevTools(); // TODO: Remove for release.
+
+            profileWin.once("ready-to-show", () => {
+                profileWin.show();
+            });
+
+            profileWin.on("command", (command, ...args) => {
+                switch (command) {
+                    case "ban":
+                        client.ban(...args).catch(console.log);
+                        break;
+                    case "unban":
+                        client.unban(...args).catch(console.log);
+                        break;
+                    case "timeout":
+                        client.timeout(...args).catch(console.log);
+                        break;
+                    case "mod":
+                        client.mod(...args).catch(console.log);
+                        break;
+                    case "unmod":
+                        client.unmod(...args).catch(console.log);
+                        break;
+                    case "join":
+                        client.join(...args).catch(console.log);
+                        break;
+                    case "follow":
+                        client.follow(...args);
+                        break;
+                    case "unfollow":
+                        client.unfollow(...args);
+                        break;
+                }
+            });
+
+            profileWin.on("closed", () => {
+                profileWin = null;
+            });
+        }
     });
 });

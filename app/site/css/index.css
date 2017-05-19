@@ -107,3 +107,9 @@ body {
     overflow-y: none;
     resize: none;
 }
+
+a.userlink, a.userlink:hover, a.userlink:visited {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}

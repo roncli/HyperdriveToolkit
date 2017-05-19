@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+        <script>$ = jQuery = require("jquery")</script>
+        <script src="js/profile.js"></script>
+    </head>
+    <body>
+        <button id="ban">Ban</button>
+        <button id="unban">Unban</button>
+        Timeout:
+        <select id="timeout-time">
+            <option value="1">Purge</option>
+            <option value="60">1 minute</option>
+            <option value="300">5 minutes</option>
+            <option value="900">15 minutes</option>
+            <option value="1800">30 minutes</option>
+        </select>
+        <button id="timeout">Timeout</button>
+        <br />
+        Ban Reason: <input type="text" id="ban-reason" />
+        <br /><br />
+        <button id="mod">Mod</button>
+        <button id="unmod">Unmod</button>
+        <br /><br />
+        <button id="twitch">twitch.tv/<span class="username"></span></button>
+        <button id="join">Join #<span class="username"></span></button>
+        <br /><br />
+        <button id="follow">Follow</button>
+        <button id="unfollow">Unfollow</button>
+    </body>
+</html>

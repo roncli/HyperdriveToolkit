@@ -323,6 +323,77 @@ class Twitch extends Chat {
         return this.tmi.say(channel, command);
     }
 
+    // #                 
+    // #                 
+    // ###    ###  ###   
+    // #  #  #  #  #  #  
+    // #  #  # ##  #  #  
+    // ###    # #  #  #  
+    ban(channel, username, reason) {
+        return this.tmi.ban(channel, username, reason);
+    }
+
+    //             #                 
+    //             #                 
+    // #  #  ###   ###    ###  ###   
+    // #  #  #  #  #  #  #  #  #  #  
+    // #  #  #  #  #  #  # ##  #  #  
+    //  ###  #  #  ###    # #  #  #  
+    unban(channel, username) {
+        return this.tmi.unban(channel, username);
+    }
+
+    //  #     #                             #    
+    //  #                                   #    
+    // ###   ##    # #    ##    ##   #  #  ###   
+    //  #     #    ####  # ##  #  #  #  #   #    
+    //  #     #    #  #  ##    #  #  #  #   #    
+    //   ##  ###   #  #   ##    ##    ###    ##  
+    timeout(channel, username, seconds, reason) {
+        return this.tmi.timeout(channel, username, seconds, reason);
+    }
+
+    //                #  
+    //                #  
+    // # #    ##    ###  
+    // ####  #  #  #  #  
+    // #  #  #  #  #  #  
+    // #  #   ##    ###  
+    mod(channel, username) {
+        return this.tmi.mod(channel, username);
+    }
+
+    //                            #  
+    //                            #  
+    // #  #  ###   # #    ##    ###  
+    // #  #  #  #  ####  #  #  #  #  
+    // #  #  #  #  #  #  #  #  #  #  
+    //  ###  #  #  #  #   ##    ###  
+    unmod(channel, username) {
+        return this.tmi.unmod(channel, username);
+    }
+
+    //   #         ##    ##                
+    //  # #         #     #                
+    //  #     ##    #     #     ##   #  #  
+    // ###   #  #   #     #    #  #  #  #  
+    //  #    #  #   #     #    #  #  ####  
+    //  #     ##   ###   ###    ##   ####  
+    follow(username) {
+        // TODO: Allow user to set whether they receive notifications when the channel goes live.
+        return this.api.userFollowChannel(this.username, username, this.accessToken);
+    }
+
+    //               #         ##    ##                
+    //              # #         #     #                
+    // #  #  ###    #     ##    #     #     ##   #  #  
+    // #  #  #  #  ###   #  #   #     #    #  #  #  #  
+    // #  #  #  #   #    #  #   #     #    #  #  ####  
+    //  ###  #  #   #     ##   ###   ###    ##   ####  
+    unfollow(username) {
+        return this.api.userUnfollowChannel(this.username, username, this.accessToken);
+    }
+
     //              #     ##    #                            
     //              #    #  #   #                            
     //  ###   ##   ###    #    ###   ###    ##    ###  # #   
