@@ -1,5 +1,6 @@
 const electron = require("electron"),
-    win = electron.remote.getCurrentWindow();
+    win = electron.remote.getCurrentWindow(),
+    Utilities = require("./js/utilities");
 
 //        #                                                      #    #    ##                              #    
 //                                                              # #         #                              #    
@@ -8,12 +9,28 @@ const electron = require("electron"),
 // ####   #    #  #        #  #  #  #        #  #  #     #  #   #     #     #    ##            ##   ##     #    
 // ####  ###   #  #         ##   #  #        ###   #      ##    #    ###   ###    ##         ###     ##     ##  
 //                                           #                                                                  
-win.on("profile-set", (channel, username) => {
+win.on("profile-set", (channel, username, userChat) => {
     win.channel = channel;
     win.username = username;
+    $("#user-chat").html(userChat);
 
     document.title = `Hyperdrive Toolkit - Profile - ${username} on ${channel}`;
     $(".username").text(username);
+});
+
+//        #                                        #            #                        #     #     #                       
+//                                                 #            #                        #     #                             
+// #  #  ##    ###          ##   ###          ##   ###    ###  ###          ###    ##   ###   ###   ##    ###    ###   ###   
+// #  #   #    #  #        #  #  #  #        #     #  #  #  #   #    ####  ##     # ##   #     #     #    #  #  #  #  ##     
+// ####   #    #  #        #  #  #  #        #     #  #  # ##   #            ##   ##     #     #     #    #  #   ##     ##   
+// ####  ###   #  #         ##   #  #         ##   #  #   # #    ##        ###     ##     ##    ##  ###   #  #  #     ###    
+//                                                                                                               ###         
+win.on("chat-settings", (settings) => {
+    Utilities.changeCss("#user-chat", `font-family: "${settings.font.face}"; font-size: ${settings.font.size}px; color: ${settings.colors.chat.foreground}; background-color: ${settings.colors.chat.background};`, $);
+    Utilities.changeCss("#user-chat .info", `color: ${settings.colors.chat.info};`, $);
+    Utilities.changeCss("#user-chat .join", `color: ${settings.colors.chat.join};`, $);
+    Utilities.changeCss("#user-chat .part", `color: ${settings.colors.chat.part};`, $);
+    Utilities.changeCss("#user-chat .highlight", `color: ${settings.colors.chat.highlight};`, $);
 });
 
 //         #      #                                       #     #                               #        

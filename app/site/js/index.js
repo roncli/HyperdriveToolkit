@@ -1,47 +1,19 @@
-const electron = require("electron"),
-    tinycolor = require("tinycolor2"),
+const path = require("path"),
+    electron = require("electron"),
     remote = electron.remote,
     app = remote.app,
     win = remote.getCurrentWindow(),
-    path = require("path"),
+    tinycolor = require("tinycolor2"),
     Twitch = require("./modules/chat/twitch"), // TODO: Load modules
+    File = require("./modules/datastore/file"),
     settings = require("./js/apiSettings"),
     client = new Twitch(settings),
-    File = require("./modules/datastore/file");
+    Utilities = require("./js/utilities");
 
 var channels = {},
     profileWin;
 
 class Index {
-    //       #                              ##                 
-    //       #                             #  #                
-    //  ##   ###    ###  ###    ###   ##   #      ###    ###   
-    // #     #  #  #  #  #  #  #  #  # ##  #     ##     ##     
-    // #     #  #  # ##  #  #   ##   ##    #  #    ##     ##   
-    //  ##   #  #   # #  #  #  #      ##    ##   ###    ###    
-    //                          ###                            
-    // Based on http://stackoverflow.com/a/19826393/214137
-    static changeCss(cssName, cssValue) {
-        var cssMainContainer = $("#css-modifier-container"),
-            classContainer = cssMainContainer.find(`div[data-class="${cssName}"]`);
-
-        // Create hidden css main container if it doesn't exist.
-        if (cssMainContainer.length === 0) {
-            cssMainContainer = $("<div></div>").attr({id: "css-modifier-container"});
-            cssMainContainer.hide();
-            cssMainContainer.appendTo($("body"));
-        }
-
-        // Create div for the css if it doesn't exist.
-        if (classContainer.length === 0) {
-            classContainer = $("<div></div>").attr({"data-class": cssName});
-            classContainer.appendTo(cssMainContainer);
-        }
-
-        // Replace style in the css div.
-        classContainer.html(`<style>${cssName}{${cssValue}}</style>`);
-    }
-
     //              #    ###                     ##    
     //              #    #  #                     #    
     //  ###   ##   ###   #  #   ###  ###    ##    #    
@@ -115,15 +87,14 @@ class Index {
     // ###     ##     ##    ##  ###   #  #  #     ###     ##   #  #   # #  #  #  #      ##    ###  
     //                                       ###                                  ###              
     static settingsChanged() {
-        this.changeCss("#display", `font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`); // TODO: Potentially have a max size for title, input bo
-        this.changeCss("#display div.chat", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; background-color: ${win.data.appSettings.data.chat.colors.chat.background};`);
-        //changeCss("#display div.chat .text", `font-size: ${win.data.appSettings.data.chat.font.size}px;`);
-        this.changeCss("#display div.chat .info", `color: ${win.data.appSettings.data.chat.colors.chat.info};`);
-        this.changeCss("#display div.chat .join", `color: ${win.data.appSettings.data.chat.colors.chat.join};`);
-        this.changeCss("#display div.chat .part", `color: ${win.data.appSettings.data.chat.colors.chat.part};`);
-        this.changeCss("#display div.chat .highlight", `color: ${win.data.appSettings.data.chat.colors.chat.highlight};`);
-        this.changeCss("#inputbox", `color: ${win.data.appSettings.data.chat.colors.input.foreground}; background-color: ${win.data.appSettings.data.chat.colors.input.background}; font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`);
-        this.changeCss("#display div.users", `color: ${win.data.appSettings.data.chat.colors.userList.foreground}; background-color: ${win.data.appSettings.data.chat.colors.userList.background};`);
+        Utilities.changeCss("#display", `font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`, $); // TODO: Potentially have a max size for title, input box
+        Utilities.changeCss("#display div.chat", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; background-color: ${win.data.appSettings.data.chat.colors.chat.background};`, $);
+        Utilities.changeCss("#display div.chat .info", `color: ${win.data.appSettings.data.chat.colors.chat.info};`, $);
+        Utilities.changeCss("#display div.chat .join", `color: ${win.data.appSettings.data.chat.colors.chat.join};`, $);
+        Utilities.changeCss("#display div.chat .part", `color: ${win.data.appSettings.data.chat.colors.chat.part};`, $);
+        Utilities.changeCss("#display div.chat .highlight", `color: ${win.data.appSettings.data.chat.colors.chat.highlight};`, $);
+        Utilities.changeCss("#inputbox", `color: ${win.data.appSettings.data.chat.colors.input.foreground}; background-color: ${win.data.appSettings.data.chat.colors.input.background}; font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`, $);
+        Utilities.changeCss("#display div.users", `color: ${win.data.appSettings.data.chat.colors.userList.foreground}; background-color: ${win.data.appSettings.data.chat.colors.userList.background};`, $);
         this.setSize($("#inputbox"));
     }
 
@@ -198,7 +169,7 @@ class Index {
     // #  #    ##   ##    #     #      #    #  #  # #   
     //  ###  ###     ##   #     ####  ###   #  #  #  #  
     static userLink(channel, username, displayname) {
-        return `<a class="userlink" data-username="${username}", data-channel="${channel}">${displayname || username}</a>`;
+        return `<a class="userlink" data-username="${username}" data-displayname="${displayname}" data-channel="${channel}">${displayname || username}</a>`;
     }
 }
 
@@ -207,6 +178,7 @@ if (!win.data) {
 }
 win.data.userSettings = new File(path.join(app.getPath("userData"), "userSettings.js")),
 win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.js")),
+
 // TODO: Figure out how to do timeouts, bans, purges
 //       ##     #                 #                        #    # #                                               # #   #    
 //        #                       #                       #     # #                                               # #    #   
@@ -228,9 +200,9 @@ client.on("message", (channel, username, usercolor, displayname, html, text) => 
     }
 
     if (text.indexOf(win.data.userSettings.data.twitch.username) === -1) {
-        $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}<br />`);
+        $(`#channel-${channelName} .text`).append(`<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}<br /></span>`);
     } else {
-        $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span><br />`);
+        $(`#channel-${channelName} .text`).append(`<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span><br /></span>`);
     }
 });
 
@@ -393,6 +365,9 @@ win.data.appSettings.load().then(() => {
 //  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###           ##   #  #        ###     # #   #     ##    ###  
 //       #     #                                          ###                                                                
 win.data.appSettings.on("saved", () => {
+    if (profileWin) {
+        profileWin.emit("chat-settings", win.data.appSettings.data.chat);
+    }
     Index.settingsChanged();
 });
 
@@ -517,12 +492,13 @@ $(document).ready(() => {
         var data = $(ev.target).data();
 
         if (profileWin) {
-            profileWin.emit("profile-set", data.channel, data.username);
+            profileWin.emit("profile-set", data.channel, data.username, $(`#display .text .user-${data.username}`).map((index, el) => $(el).html()).toArray().join("")); // TODO: Consolidate user data, possibly into the channel user array.
         } else {
-            profileWin = new electron.remote.BrowserWindow({width: 800, height: 600, title: `Hyperdrive Toolkit - Profile - ${data.username} on ${data.channel}`});
+            profileWin = new electron.remote.BrowserWindow({width: 640, height: 480, resizable: false, title: `Hyperdrive Toolkit - Profile - ${data.username} on ${data.channel}`});
 
             profileWin.on("profile-get", () => {
-                profileWin.emit("profile-set", data.channel, data.username);
+                profileWin.emit("profile-set", data.channel, data.username, $(`#display .text .user-${data.username}`).map((index, el) => $(el).html()).toArray().join("")); // TODO: Consolidate user data, possibly into the channel user array.
+                profileWin.emit("chat-settings", win.data.appSettings.data.chat);
             });
 
             profileWin.loadURL(`file://${__dirname}/profile.htm`, {

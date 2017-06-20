@@ -1,0 +1,36 @@
+.panel {
+    margin-bottom: 0;
+}
+
+h3 {
+    margin: 0;
+}
+
+.buttons {
+    padding-bottom: 5px;
+}
+
+.buttons-bottom {
+    padding-top: 5px;
+}
+
+#timeout-time {
+    display: inline-block; width: auto;
+}
+
+#user-chat {
+    height: 252px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    user-select: text;
+}
+
+a.userlink, a.userlink:hover, a.userlink:visited {
+    text-decoration: none;
+    color: inherit;
+    cursor: text;
+}
+
+.btn.btn-compact {
+    padding: 3px 6px;
+}

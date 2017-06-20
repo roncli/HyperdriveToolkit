@@ -18,11 +18,11 @@
         "url": "https://github.com/roncli/HyperdriveToolkit.git"
     },
     "devDependencies": {
-        "electron-builder": "15.6.2",
-        "electron": "1.6.2"
+        "electron": "1.6.11",
+        "electron-builder": "19.5.1"
     },
     "engines": {
-        "node": ">=7.0.0"
+        "node": ">=8.0.0"
     },
     "productName": "HyperdriveToolkit",
     "build": {
