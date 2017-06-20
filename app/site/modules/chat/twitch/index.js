@@ -474,6 +474,33 @@ class Twitch extends Chat {
             });
         });
     }
+
+    //               #     ##    #           #                 
+    //               #    #  #   #           #                 
+    //  ###    ##   ###    #    ###    ###  ###   #  #   ###   
+    // ##     # ##   #      #    #    #  #   #    #  #  ##     
+    //   ##   ##     #    #  #   #    # ##   #    #  #    ##   
+    // ###     ##     ##   ##     ##   # #    ##   ###  ###    
+    /**
+     * Sets the channel's status.
+     * @param {string} channel The channel to set the status for.
+     * @param {object} status The status to set.
+     * @return {Promise} A promise that resolves when the status is set.
+     */
+    setStatus(channel, status) {
+        const twitch = this;
+
+        return new Promise((resolve, reject) => {
+            twitch.api.updateChannel(channel, twitch.accessToken, {channel: status}, (err, channel) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(channel);
+            });
+        });
+    }
 }
 
 module.exports = Twitch;

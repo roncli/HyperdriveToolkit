@@ -71,6 +71,13 @@ body {
     height: 48px;
 }
 
+#display > .tab-pane > .chat > .topic .topic-foreground > .topic-edit {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 10px;
+}
+
 #display > .tab-pane > .chat > .topic .topic-foreground > .topic-text {
     flex-grow: 1;
     height: 48px;

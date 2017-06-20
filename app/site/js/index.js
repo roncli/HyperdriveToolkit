@@ -11,7 +11,7 @@ const path = require("path"),
     Utilities = require("./js/utilities");
 
 var channels = {},
-    profileWin;
+    profileWin, editChannelWin;
 
 class Index {
     //              #    ###                     ##    
@@ -22,7 +22,7 @@ class Index {
     // #      ##     ##  #      # #  #  #   ##   ###   
     //  ###                                            
     static getPanel(username) {
-        return `<div role="tabpanel" class="tab-pane" id="channel-${username}">
+        return `<div role="tabpanel" class="tab-pane channel-pane" id="channel-${username}" data-username="${username}">
     <div class="chat">
         <div class="topic"></div>
         <div class="text"></div>
@@ -117,6 +117,11 @@ class Index {
     // #  #  #  #  #  #  # ##   #    ##    #  #   #    #     ##    # ##  #  #  
     //  ###  ###    ###   # #    ##   ##    ##     ##  #      ##    # #  #  #  
     //       #                                                                 
+    /**
+     * Updates the stream's data.
+     * @param {stream} channel The channel to update.
+     * @return {void}
+     */
     static updateStream(channel) {
         var channelName = channel.substring(1);
         client.getStream(channelName).then((stream) => {
@@ -154,6 +159,9 @@ class Index {
     ${channels[channel].channel && channels[channel].channel.profile_banner ? `<div class="topic-background" style="background-image: url('${channels[channel].channel.profile_banner}');"></div>` : ""}
     <div class="topic-foreground">
         ${channels[channel].channel && channels[channel].channel.logo ? `<img src="${channels[channel].channel.logo}" class="topic-logo">` : ""}
+        <div class="topic-edit">
+            <button class="btn btn-sm btn-default editchannel"><span class="glyphicon glyphicon-edit"></span></button>
+        </div>
         ${channels[channel].channel ? `<div class="topic-text">
             ${channel}${channels[channel].channel.status ? ` - ` : ""}${this.htmlEncode(channels[channel].channel.status)} ${channels[channel].channel.game ? `(${this.htmlEncode(channels[channel].channel.game)})` : ""}<br />
             ${channels[channel].stream ? `Online: ${this.getTimeSince(channels[channel].stream.created_at)} - Viewers: ${channels[channel].stream.viewers} - ` : ""}${channels[channel].chatters ? `Chatters: ${channels[channel].chatters.chatter_count} - ` : ""}Followers: ${channels[channel].channel.followers} - Views: ${channels[channel].channel.views}
@@ -501,13 +509,7 @@ $(document).ready(() => {
                 profileWin.emit("chat-settings", win.data.appSettings.data.chat);
             });
 
-            profileWin.loadURL(`file://${__dirname}/profile.htm`, {
-                postData: [{
-                    type: "rawData",
-                    bytes: Buffer.from(`channel=${data.channel}&username=${data.username}`)
-                }],
-                extraHeaders: "Content-Type: application/x-www-form-urlencoded"
-            });
+            profileWin.loadURL(`file://${__dirname}/profile.htm`);
             profileWin.setMenu(null);
             profileWin.toggleDevTools(); // TODO: Remove for release.
 
@@ -546,6 +548,47 @@ $(document).ready(() => {
 
             profileWin.on("closed", () => {
                 profileWin = null;
+            });
+        }
+    });
+
+    // #            #     #                               #   #     #          #                             ##                                  ##     #          #     
+    // #            #     #                               #         #          #                              #                                   #                #     
+    // ###   #  #  ###   ###    ##   ###          ##    ###  ##    ###    ##   ###    ###  ###   ###    ##    #           ##   ###          ##    #    ##     ##   # #   
+    // #  #  #  #   #     #    #  #  #  #        # ##  #  #   #     #    #     #  #  #  #  #  #  #  #  # ##   #          #  #  #  #        #      #     #    #     ##    
+    // #  #  #  #   #     #    #  #  #  #   ##   ##    #  #   #     #    #     #  #  # ##  #  #  #  #  ##     #          #  #  #  #        #      #     #    #     # #   
+    // ###    ###    ##    ##   ##   #  #   ##    ##    ###  ###     ##   ##   #  #   # #  #  #  #  #   ##   ###          ##   #  #         ##   ###   ###    ##   #  #  
+    $("#display").on("click", "button.editchannel", (ev) => {
+        const username = $(ev.target).closest(".channel-pane").data("username"),
+            channelName = `#${username}`,
+            channel = channels[channelName];
+
+        if (editChannelWin) {
+            editChannelWin.emit("editchannel-set", username, channel && channel.channel ? channel.channel.status : "", channel && channel.channel ? channel.channel.game : "");
+        } else {
+            editChannelWin = new electron.remote.BrowserWindow({width: 640, height: 480, resizable: false, title: `Hyperdrive Toolkit - Edit Channel - #${username}`});
+
+            editChannelWin.on("editchannel-get", () => {
+                editChannelWin.emit("editchannel-set", username, channel && channel.channel ? channel.channel.status : "", channel && channel.channel ? channel.channel.game : "");
+            });
+
+            editChannelWin.loadURL(`file://${__dirname}/editchannel.htm`);
+            editChannelWin.setMenu(null);
+            editChannelWin.toggleDevTools(); // TODO: Remove for release.
+
+            editChannelWin.once("ready-to-show", () => {
+                editChannelWin.show();
+            });
+
+            editChannelWin.on("updatechannel", (channel, title, game) => {
+                client.setStatus(channel, {status: title, game}).then((channelData) => {
+                    channels[channelName].channel = channelData;
+                    Index.updateTitle(channelName);
+                }).catch(console.log);
+            });
+
+            editChannelWin.on("closed", () => {
+                editChannelWin = null;
             });
         }
     });
