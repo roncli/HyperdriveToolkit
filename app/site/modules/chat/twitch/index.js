@@ -23,7 +23,7 @@ TwitchApi.prototype.getEmoticonImages = function(callback) {
         },
         callback
     );
-}
+};
 
 //  #####           #     #            #     
 //    #                   #            #     
@@ -142,7 +142,7 @@ class Twitch extends Chat {
                         span.append($("<img></img>").attr({
                             src: `https://static-cdn.jtvnw.net/emoticons/v1/${emote.id}/1.0`,
                             title: text.substring(start, emote.end + 1)
-                        }));
+                        }).addClass("emote"));
 
                         lastEnd = emote.end + 1;
                     });

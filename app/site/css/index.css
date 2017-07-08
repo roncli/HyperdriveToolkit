@@ -34,11 +34,21 @@ body {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    overflow-x: hidden;
 }
 
 #display > .tab-pane > .chat > .text {
     overflow-x: hidden;
     overflow-y: auto;
+    word-wrap: break-word;
+}
+
+#display > .tab-pane > .chat > .text img.emote {
+    height: 28px;
+}
+
+#display > .tab-pane > .chat > .text > span {
+    display: block;
 }
 
 #display > .tab-pane > .chat > .topic {
@@ -92,13 +102,15 @@ body {
 
 #display > .tab-pane > .divider {
     background-color: #cccccc;
-    width: 4px;
+    flex-basis: 4px;
+    flex-shrink: 0;
     cursor: ew-resize;
 }
 
 #display > .tab-pane > .users {
     overflow: auto;
-    width: 100px;
+    flex-basis: 125px;
+    flex-shrink: 0;
     min-width: 75px;
     max-width: 250px;
 }

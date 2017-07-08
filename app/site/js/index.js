@@ -14,13 +14,13 @@ var channels = {},
     profileWin, editChannelWin;
 
 class Index {
-    //              #    ###                     ##    
-    //              #    #  #                     #    
-    //  ###   ##   ###   #  #   ###  ###    ##    #    
-    // #  #  # ##   #    ###   #  #  #  #  # ##   #    
-    //  ##   ##     #    #     # ##  #  #  ##     #    
-    // #      ##     ##  #      # #  #  #   ##   ###   
-    //  ###                                            
+    //              #    ###                     ##
+    //              #    #  #                     #
+    //  ###   ##   ###   #  #   ###  ###    ##    #
+    // #  #  # ##   #    ###   #  #  #  #  # ##   #
+    //  ##   ##     #    #     # ##  #  #  ##     #
+    // #      ##     ##  #      # #  #  #   ##   ###
+    //  ###
     static getPanel(username) {
         return `<div role="tabpanel" class="tab-pane channel-pane" id="channel-${username}" data-username="${username}">
     <div class="chat">
@@ -32,46 +32,46 @@ class Index {
 </div>`;
     }
 
-    //              #    ###         #     
-    //              #     #          #     
-    //  ###   ##   ###    #     ###  ###   
-    // #  #  # ##   #     #    #  #  #  #  
-    //  ##   ##     #     #    # ##  #  #  
-    // #      ##     ##   #     # #  ###   
-    //  ###                                
+    //              #    ###         #
+    //              #     #          #
+    //  ###   ##   ###    #     ###  ###
+    // #  #  # ##   #     #    #  #  #  #
+    //  ##   ##     #     #    # ##  #  #
+    // #      ##     ##   #     # #  ###
+    //  ###
     static getTab(username) {
         return `<li id="tab-${username}" class="channel-tab"><a data-toggle="tab" href="#channel-${username}">#${username}</a></li>`;
     }
 
-    //              #    ###    #                 ##    #                      
-    //              #     #                      #  #                          
-    //  ###   ##   ###    #    ##    # #    ##    #    ##    ###    ##    ##   
-    // #  #  # ##   #     #     #    ####  # ##    #    #    #  #  #     # ##  
-    //  ##   ##     #     #     #    #  #  ##    #  #   #    #  #  #     ##    
-    // #      ##     ##   #    ###   #  #   ##    ##   ###   #  #   ##    ##   
-    //  ###                                                                    
+    //              #    ###    #                 ##    #
+    //              #     #                      #  #
+    //  ###   ##   ###    #    ##    # #    ##    #    ##    ###    ##    ##
+    // #  #  # ##   #     #     #    ####  # ##    #    #    #  #  #     # ##
+    //  ##   ##     #     #     #    #  #  ##    #  #   #    #  #  #     ##
+    // #      ##     ##   #    ###   #  #   ##    ##   ###   #  #   ##    ##
+    //  ###
     static getTimeSince(time) {
         var diff = new Date().getTime() - new Date(time).getTime();
 
         return `${Math.floor(diff / 3600000)}:${("0" + Math.floor(diff % 3600000 / 60000)).slice(-2)}`;
     }
 
-    // #      #          ##    ####                       #        
-    // #      #           #    #                          #        
-    // ###   ###   # #    #    ###   ###    ##    ##    ###   ##   
-    // #  #   #    ####   #    #     #  #  #     #  #  #  #  # ##  
-    // #  #   #    #  #   #    #     #  #  #     #  #  #  #  ##    
-    // #  #    ##  #  #  ###   ####  #  #   ##    ##    ###   ##   
+    // #      #          ##    ####                       #
+    // #      #           #    #                          #
+    // ###   ###   # #    #    ###   ###    ##    ##    ###   ##
+    // #  #   #    ####   #    #     #  #  #     #  #  #  #  # ##
+    // #  #   #    #  #   #    #     #  #  #     #  #  #  #  ##
+    // #  #    ##  #  #  ###   ####  #  #   ##    ##    ###   ##
     static htmlEncode(str) {
         return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
     }
 
-    //               #     ##    #                
-    //               #    #  #                    
-    //  ###    ##   ###    #    ##    ####   ##   
-    // ##     # ##   #      #    #      #   # ##  
-    //   ##   ##     #    #  #   #     #    ##    
-    // ###     ##     ##   ##   ###   ####   ##   
+    //               #     ##    #
+    //               #    #  #
+    //  ###    ##   ###    #    ##    ####   ##
+    // ##     # ##   #      #    #      #   # ##
+    //   ##   ##     #    #  #   #     #    ##
+    // ###     ##     ##   ##   ###   ####   ##
     static setSize($el) {
         setTimeout(() => {
             $el.css({height: "1px"});
@@ -79,13 +79,13 @@ class Index {
         }, 0);
     }
 
-    //               #     #     #                        ##   #                                #  
-    //               #     #                             #  #  #                                #  
-    //  ###    ##   ###   ###   ##    ###    ###   ###   #     ###    ###  ###    ###   ##    ###  
-    // ##     # ##   #     #     #    #  #  #  #  ##     #     #  #  #  #  #  #  #  #  # ##  #  #  
-    //   ##   ##     #     #     #    #  #   ##     ##   #  #  #  #  # ##  #  #   ##   ##    #  #  
-    // ###     ##     ##    ##  ###   #  #  #     ###     ##   #  #   # #  #  #  #      ##    ###  
-    //                                       ###                                  ###              
+    //               #     #     #                        ##   #                                #
+    //               #     #                             #  #  #                                #
+    //  ###    ##   ###   ###   ##    ###    ###   ###   #     ###    ###  ###    ###   ##    ###
+    // ##     # ##   #     #     #    #  #  #  #  ##     #     #  #  #  #  #  #  #  #  # ##  #  #
+    //   ##   ##     #     #     #    #  #   ##     ##   #  #  #  #  # ##  #  #   ##   ##    #  #
+    // ###     ##     ##    ##  ###   #  #  #     ###     ##   #  #   # #  #  #  #      ##    ###
+    //                                       ###                                  ###
     static settingsChanged() {
         Utilities.changeCss("#display", `font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`, $); // TODO: Potentially have a max size for title, input box
         Utilities.changeCss("#display div.chat", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; background-color: ${win.data.appSettings.data.chat.colors.chat.background};`, $);
@@ -98,25 +98,25 @@ class Index {
         this.setSize($("#inputbox"));
     }
 
-    //  #     #                        #                      
-    //  #                              #                      
-    // ###   ##    # #    ##    ###   ###    ###  # #   ###   
-    //  #     #    ####  # ##  ##      #    #  #  ####  #  #  
-    //  #     #    #  #  ##      ##    #    # ##  #  #  #  #  
-    //   ##  ###   #  #   ##   ###      ##   # #  #  #  ###   
-    //                                                  #     
+    //  #     #                        #
+    //  #                              #
+    // ###   ##    # #    ##    ###   ###    ###  # #   ###
+    //  #     #    ####  # ##  ##      #    #  #  ####  #  #
+    //  #     #    #  #  ##      ##    #    # ##  #  #  #  #
+    //   ##  ###   #  #   ##   ###      ##   # #  #  #  ###
+    //                                                  #
     static timestamp() {
         var date = new Date();
         return `${win.data.appSettings.data.chat.timestamps ? `[${`0${date.getHours()}`.substr(-2)}:${`0${date.getMinutes()}`.substr(-2)}:${`0${date.getSeconds()}`.substr(-2)}` : ""}] `;
     }
 
-    //                #         #           ##    #                            
-    //                #         #          #  #   #                            
-    // #  #  ###    ###   ###  ###    ##    #    ###   ###    ##    ###  # #   
-    // #  #  #  #  #  #  #  #   #    # ##    #    #    #  #  # ##  #  #  ####  
-    // #  #  #  #  #  #  # ##   #    ##    #  #   #    #     ##    # ##  #  #  
-    //  ###  ###    ###   # #    ##   ##    ##     ##  #      ##    # #  #  #  
-    //       #                                                                 
+    //                #         #           ##    #
+    //                #         #          #  #   #
+    // #  #  ###    ###   ###  ###    ##    #    ###   ###    ##    ###  # #
+    // #  #  #  #  #  #  #  #   #    # ##    #    #    #  #  # ##  #  #  ####
+    // #  #  #  #  #  #  # ##   #    ##    #  #   #    #     ##    # ##  #  #
+    //  ###  ###    ###   # #    ##   ##    ##     ##  #      ##    # #  #  #
+    //       #
     /**
      * Updates the stream's data.
      * @param {stream} channel The channel to update.
@@ -144,13 +144,13 @@ class Index {
         });
     }
 
-    //                #         #          ###    #     #    ##          
-    //                #         #           #           #     #          
-    // #  #  ###    ###   ###  ###    ##    #    ##    ###    #     ##   
-    // #  #  #  #  #  #  #  #   #    # ##   #     #     #     #    # ##  
-    // #  #  #  #  #  #  # ##   #    ##     #     #     #     #    ##    
-    //  ###  ###    ###   # #    ##   ##    #    ###     ##  ###    ##   
-    //       #                                                           
+    //                #         #          ###    #     #    ##
+    //                #         #           #           #     #
+    // #  #  ###    ###   ###  ###    ##    #    ##    ###    #     ##
+    // #  #  #  #  #  #  #  #   #    # ##   #     #     #     #    # ##
+    // #  #  #  #  #  #  # ##   #    ##     #     #     #     #    ##
+    //  ###  ###    ###   # #    ##   ##    #    ###     ##  ###    ##
+    //       #
     static updateTitle(channel) {
         var channelName = channel.substring(1);
 
@@ -170,15 +170,49 @@ class Index {
 </div>`);
     }
 
-    //                          #      #          #     
-    //                          #                 #     
-    // #  #   ###    ##   ###   #     ##    ###   # #   
-    // #  #  ##     # ##  #  #  #      #    #  #  ##    
-    // #  #    ##   ##    #     #      #    #  #  # #   
-    //  ###  ###     ##   #     ####  ###   #  #  #  #  
+    //                          #      #          #
+    //                          #                 #
+    // #  #   ###    ##   ###   #     ##    ###   # #
+    // #  #  ##     # ##  #  #  #      #    #  #  ##
+    // #  #    ##   ##    #     #      #    #  #  # #
+    //  ###  ###     ##   #     ####  ###   #  #  #  #
     static userLink(channel, username, displayname) {
         return `<a class="userlink" data-username="${username}" data-displayname="${displayname}" data-channel="${channel}">${displayname || username}</a>`;
     }
+
+    //  #            ##    #    ###          #     #
+    //              #  #   #    #  #         #     #
+    // ##     ###   #  #  ###   ###    ##   ###   ###    ##   # #
+    //  #    ##     ####   #    #  #  #  #   #     #    #  #  ####
+    //  #      ##   #  #   #    #  #  #  #   #     #    #  #  #  #
+    // ###   ###    #  #    ##  ###    ##     ##    ##   ##   #  #
+    static isAtBottom($channel) {
+        return $channel.prop("scrollHeight") - $channel.scrollTop() <= $channel.height() + 28;
+    }
+
+    //                                  #  ###          ##   #                             ##
+    //                                  #   #          #  #  #                              #
+    //  ###  ###   ###    ##   ###    ###   #     ##   #     ###    ###  ###   ###    ##    #
+    // #  #  #  #  #  #  # ##  #  #  #  #   #    #  #  #     #  #  #  #  #  #  #  #  # ##   #
+    // # ##  #  #  #  #  ##    #  #  #  #   #    #  #  #  #  #  #  # ##  #  #  #  #  ##     #
+    //  # #  ###   ###    ##   #  #   ###   #     ##    ##   #  #   # #  #  #  #  #   ##   ###
+    //       #     #
+    static appendToChannel($channel, html) {
+        const atBottom = this.isAtBottom($channel);
+
+        $channel.append(html);
+
+        if (atBottom) {
+            $channel.scrollTop($channel.prop("scrollHeight"));
+        }
+
+        const thisChannelName = $channel.parent().parent().data("username"),
+            activeChannelName = $("#channels li.active").text().substring(1);
+        
+        if (thisChannelName !== activeChannelName) {
+            $(`#tab-${thisChannelName}`).find("a").addClass("text-danger");
+        }
+   }
 }
 
 if (!win.data) {
@@ -188,45 +222,53 @@ win.data.userSettings = new File(path.join(app.getPath("userData"), "userSetting
 win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.js")),
 
 // TODO: Figure out how to do timeouts, bans, purges
-//       ##     #                 #                        #    # #                                               # #   #    
-//        #                       #                       #     # #                                               # #    #   
-//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #   
-// #      #     #    # ##  #  #   #          #  #  #  #   #          ####  # ##  ##     ##     #  #  #  #  # ##          #   
-// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  ##      ##     ##   # ##   ##   ##            #   
-//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #    
-//                                                                                                    ###                    
+//       ##     #                 #                        #    # #                                               # #   #
+//        #                       #                       #     # #                                               # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ####  # ##  ##     ##     #  #  #  #  # ##          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  ##      ##     ##   # ##   ##   ##            #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #
+//                                                                                                    ###
 client.on("message", (channel, username, usercolor, displayname, html, text) => {
     var color = tinycolor(usercolor),
         background = tinycolor(win.data.appSettings.data.chat.colors.chat.background),
-        difference = background.getBrightness() - color.getBrightness(),
+        brightness = background.getBrightness(),
+        difference = brightness - color.getBrightness(),
         channelName = channel.substring(1);
 
-    if (difference >= 0 && difference < 50) {
+    if (difference > 0 && difference < 50) {
         usercolor = color.darken(50);
     } else if (difference < 0 && difference > -50) {
         usercolor = color.brighten(50);
+    } else if (difference === 0) {
+        if (brightness < 128) {
+            usercolor = color.brighten(50);
+        } else {
+            usercolor = color.darken(50);
+        }
     }
 
     if (text.indexOf(win.data.userSettings.data.twitch.username) === -1) {
-        $(`#channel-${channelName} .text`).append(`<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}<br /></span>`);
+        Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}</span>`);
     } else {
-        $(`#channel-${channelName} .text`).append(`<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span><br /></span>`);
+        Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span></span>`);
     }
 });
 
-//       ##     #                 #                        #    # #    #          #           # #   #    
-//        #                       #                       #     # #                           # #    #   
-//  ##    #    ##     ##   ###   ###          ##   ###    #     # #    #    ##   ##    ###    # #    #   
-// #      #     #    # ##  #  #   #          #  #  #  #   #            #   #  #   #    #  #          #   
-// #      #     #    ##    #  #   #     ##   #  #  #  #   #            #   #  #   #    #  #          #   
-//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         # #    ##   ###   #  #         #    
-//                                                                    #                                  
+//       ##     #                 #                        #    # #    #          #           # #   #
+//        #                       #                       #     # #                           # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #    #    ##   ##    ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #            #   #  #   #    #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #            #   #  #   #    #  #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         # #    ##   ###   #  #         #
+//                                                                    #
 client.on("join", (channel, username, self) => {
     var channelName = channel.substring(1);
     if (self) {
         channels[channel] = {
             users: [],
-            interval: setInterval(() => Index.updateStream(channel), 60000)
+            interval: setInterval(() => Index.updateStream(channel), 60000),
+            isAtBottom: true
         };
         $("#channels").append(Index.getTab(channelName));
         $("#display").append(Index.getPanel(channelName));
@@ -236,17 +278,17 @@ client.on("join", (channel, username, self) => {
         Index.updateStream(channel);
     }
     channels[channel].users.push(username);
-    $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="join">${(self ? "You have" : `${Index.userLink(channel, username)} has`)} joined ${channel}</span><br />`);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="join">${Index.timestamp()}${(self ? "You have" : `${Index.userLink(channel, username)} has`)} joined ${channel}</span>`);
     $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
 });
 
-//       ##     #                 #                        #    # #                     #     # #   #    
-//        #                       #                       #     # #                     #     # #    #   
-//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ###  ###   ###    # #    #   
-// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  #  #   #            #   
-// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  # ##  #      #            #   
-//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###    # #  #       ##         #    
-//                                                                   #                                   
+//       ##     #                 #                        #    # #                     #     # #   #
+//        #                       #                       #     # #                     #     # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ###  ###   ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  #  #   #            #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  # ##  #      #            #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###    # #  #       ##         #
+//                                                                   #
 client.on("part", (channel, username, self) => {
     var channelName = channel.substring(1);
     if (self) {
@@ -260,39 +302,39 @@ client.on("part", (channel, username, self) => {
         }
     } else {
         channels[channel].users.splice(channels[channel].users.indexOf(username), 1);
-        $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="part">${`${Index.userLink(channel, username)}`} has left ${channel}</span><br />`);
+        Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="part">${Index.timestamp()}${`${Index.userLink(channel, username)}`} has left ${channel}</span>`);
         $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
     }
 });
 
-//       ##     #                 #                        #    # #                 #   # #   #    
-//        #                       #                       #     # #                 #   # #    #   
-//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###   # #    #   
-// #      #     #    # ##  #  #   #          #  #  #  #   #          ####  #  #  #  #          #   
-// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #          #   
-//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##    ###         #    
+//       ##     #                 #                        #    # #                 #   # #   #
+//        #                       #                       #     # #                 #   # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###   # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ####  #  #  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##    ###         #
 client.on("mod", (channel, username) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="info">${Index.userLink(channel, username)} is now a moderator of ${channel}</span><br />`);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}${Index.userLink(channel, username)} is now a moderator of ${channel}</span>`);
 });
 
-//       ##     #                 #                        #    # #                             #   # #   #    
-//        #                       #                       #     # #                             #   # #    #   
-//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  #  #  ###   # #    ##    ###   # #    #   
-// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  ####  #  #  #  #          #   
-// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #  #  #  #  #          #   
-//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ###  #  #  #  #   ##    ###         #    
+//       ##     #                 #                        #    # #                             #   # #   #
+//        #                       #                       #     # #                             #   # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  #  #  ###   # #    ##    ###   # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  ####  #  #  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #  #  #  #  #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ###  #  #  #  #   ##    ###         #
 client.on("unmod", (channel, username) => {
     var channelName = channel.substring(1);
-    $(`#channel-${channelName} .text`).append(`${Index.timestamp()}<span class="info">${Index.userLink(channel, username)} is no longer a moderator of ${channel}</span><br />`);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}${Index.userLink(channel, username)} is no longer a moderator of ${channel}</span>`);
 });
 
-//       ##     #                 #                        #    # #                       #               #     #          ##            # #   #    
-//        #                       #                       #     # #                       #               #                 #            # #    #   
-//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ##   ###    ##    ###   ##   ###   ###   ##     ###   #     ###    # #    #   
-// #      #     #    # ##  #  #   #          #  #  #  #   #          #     #  #  # ##  #  #  # ##  #  #   #     #    #  #   #    ##             #   
-// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #     #     ##    #  #  ##    #  #   #     #    # ##   #      ##           #   
-//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ##   #      ##    ###   ##   #  #    ##  ###    # #  ###   ###           #    
+//       ##     #                 #                        #    # #                       #               #     #          ##            # #   #
+//        #                       #                       #     # #                       #               #                 #            # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ##   ###    ##    ###   ##   ###   ###   ##     ###   #     ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #     #  #  # ##  #  #  # ##  #  #   #     #    #  #   #    ##             #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #     #     ##    #  #  ##    #  #   #     #    # ##   #      ##           #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ##   #      ##    ###   ##   #  #    ##  ###    # #  ###   ###           #
 client.on("credentials", (username, accessToken) => {
     if (!win.data.userSettings.data.twitch) {
         win.data.userSettings.data.twitch = {};
@@ -306,13 +348,13 @@ client.on("credentials", (username, accessToken) => {
     });
 });
 
-//                           ##          #     #     #                             ##                   #  
-//                          #  #         #     #                                    #                   #  
-// #  #   ###    ##   ###    #     ##   ###   ###   ##    ###    ###   ###          #     ##    ###   ###  
-// #  #  ##     # ##  #  #    #   # ##   #     #     #    #  #  #  #  ##            #    #  #  #  #  #  #  
-// #  #    ##   ##    #     #  #  ##     #     #     #    #  #   ##     ##    ##    #    #  #  # ##  #  #  
-//  ###  ###     ##   #      ##    ##     ##    ##  ###   #  #  #     ###     ##   ###    ##    # #   ###  
-//                                                               ###                                       
+//                           ##          #     #     #                             ##                   #
+//                          #  #         #     #                                    #                   #
+// #  #   ###    ##   ###    #     ##   ###   ###   ##    ###    ###   ###          #     ##    ###   ###
+// #  #  ##     # ##  #  #    #   # ##   #     #     #    #  #  #  #  ##            #    #  #  #  #  #  #
+// #  #    ##   ##    #     #  #  ##     #     #     #    #  #   ##     ##    ##    #    #  #  # ##  #  #
+//  ###  ###     ##   #      ##    ##     ##    ##  ###   #  #  #     ###     ##   ###    ##    # #   ###
+//                                                               ###
 win.data.userSettings.load().then(() => {
     new Promise((resolve) => {
         if (win.data.userSettings.data && win.data.userSettings.data.twitch) {
@@ -327,13 +369,13 @@ win.data.userSettings.load().then(() => {
     });
 });
 
-//                    ##          #     #     #                             ##                   #  
-//                   #  #         #     #                                    #                   #  
-//  ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          #     ##    ###   ###  
-// #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##            #    #  #  #  #  #  #  
-// # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##    ##    #    #  #  # ##  #  #  
-//  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###     ##   ###    ##    # #   ###  
-//       #     #                                          ###                                       
+//                    ##          #     #     #                             ##                   #
+//                   #  #         #     #                                    #                   #
+//  ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          #     ##    ###   ###
+// #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##            #    #  #  #  #  #  #
+// # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##    ##    #    #  #  # ##  #  #
+//  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###     ##   ###    ##    # #   ###
+//       #     #                                          ###
 win.data.appSettings.load().then(() => {
     if (!win.data.appSettings.data.chat) {
         win.data.appSettings.data.chat = {
@@ -365,13 +407,13 @@ win.data.appSettings.load().then(() => {
     Index.settingsChanged();
 });
 
-//                    ##          #     #     #                                                                           #  
-//                   #  #         #     #                                                                                 #  
-//  ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ##   ###          ###    ###  # #    ##    ###  
-// #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##           #  #  #  #        ##     #  #  # #   # ##  #  #  
-// # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##         #  #  #  #          ##   # ##  # #   ##    #  #  
-//  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###           ##   #  #        ###     # #   #     ##    ###  
-//       #     #                                          ###                                                                
+//                    ##          #     #     #                                                                           #
+//                   #  #         #     #                                                                                 #
+//  ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ##   ###          ###    ###  # #    ##    ###
+// #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##           #  #  #  #        ##     #  #  # #   # ##  #  #
+// # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##         #  #  #  #          ##   # ##  # #   ##    #  #
+//  # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###           ##   #  #        ###     # #   #     ##    ###
+//       #     #                                          ###
 win.data.appSettings.on("saved", () => {
     if (profileWin) {
         profileWin.emit("chat-settings", win.data.appSettings.data.chat);
@@ -379,38 +421,38 @@ win.data.appSettings.on("saved", () => {
     Index.settingsChanged();
 });
 
-//        #                                                     ##          #     #     #                                          #    
-//                                                             #  #         #     #                                                #    
-// #  #  ##    ###          ##   ###          ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ###   ##   ###   
-// #  #   #    #  #        #  #  #  #        #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##     ####  #  #  # ##   #    
-// ####   #    #  #        #  #  #  #        # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##          ##   ##     #    
-// ####  ###   #  #         ##   #  #         # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###          #      ##     ##  
-//                                                 #     #                                          ###                ###              
+//        #                                                     ##          #     #     #                                          #
+//                                                             #  #         #     #                                                #
+// #  #  ##    ###          ##   ###          ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ###   ##   ###
+// #  #   #    #  #        #  #  #  #        #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##     ####  #  #  # ##   #
+// ####   #    #  #        #  #  #  #        # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##          ##   ##     #
+// ####  ###   #  #         ##   #  #         # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###          #      ##     ##
+//                                                 #     #                                          ###                ###
 win.on("appSettings-get", (remoteWin) => {
     remoteWin.emit("appSettings-get-response", win.data.appSettings.data);
 });
 
-//        #                                                     ##          #     #     #                                           #    
-//                                                             #  #         #     #                                                 #    
-// #  #  ##    ###          ##   ###          ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ###    ##   ###   
-// #  #   #    #  #        #  #  #  #        #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##     ####  ##     # ##   #    
-// ####   #    #  #        #  #  #  #        # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##           ##   ##     #    
-// ####  ###   #  #         ##   #  #         # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###          ###     ##     ##  
-//                                                 #     #                                          ###                                  
+//        #                                                     ##          #     #     #                                           #
+//                                                             #  #         #     #                                                 #
+// #  #  ##    ###          ##   ###          ###  ###   ###    #     ##   ###   ###   ##    ###    ###   ###          ###    ##   ###
+// #  #   #    #  #        #  #  #  #        #  #  #  #  #  #    #   # ##   #     #     #    #  #  #  #  ##     ####  ##     # ##   #
+// ####   #    #  #        #  #  #  #        # ##  #  #  #  #  #  #  ##     #     #     #    #  #   ##     ##           ##   ##     #
+// ####  ###   #  #         ##   #  #         # #  ###   ###    ##    ##     ##    ##  ###   #  #  #     ###          ###     ##     ##
+//                                                 #     #                                          ###
 win.on("appSettings-set", (newAppSettings) => {
     win.data.appSettings.data.chat = newAppSettings.chat;
     win.data.appSettings.save();
 });
 
-//    #       #       #                                             #      #                                     #        
-//   ###     #        #                                             #       #                                    #        
-//  # #     #      ## #   ###    ###   #   #  ## #    ###   # ##   ####      #          # ##    ###    ###    ## #  #   # 
-//   ###    #     #  ##  #   #  #   #  #   #  # # #  #   #  ##  #   #        #          ##  #  #   #      #  #  ##  #   # 
-//    # #   #     #   #  #   #  #      #   #  # # #  #####  #   #   #        #          #      #####   ####  #   #  #  ## 
-//   ###     #    #  ##  #   #  #   #  #  ##  # # #  #      #   #   #  #    #      #    #      #      #   #  #  ##   ## # 
-//    #       #    ## #   ###    ###    ## #  #   #   ###   #   #    ##    #      ###   #       ###    ####   ## #      # 
-//                                                                                 #                                #   # 
-//                                                                                                                   ###  
+//    #       #       #                                             #      #                                     #
+//   ###     #        #                                             #       #                                    #
+//  # #     #      ## #   ###    ###   #   #  ## #    ###   # ##   ####      #          # ##    ###    ###    ## #  #   #
+//   ###    #     #  ##  #   #  #   #  #   #  # # #  #   #  ##  #   #        #          ##  #  #   #      #  #  ##  #   #
+//    # #   #     #   #  #   #  #      #   #  # # #  #####  #   #   #        #          #      #####   ####  #   #  #  ##
+//   ###     #    #  ##  #   #  #   #  #  ##  # # #  #      #   #   #  #    #      #    #      #      #   #  #  ##   ## #
+//    #       #    ## #   ###    ###    ## #  #   #   ###   #   #    ##    #      ###   #       ###    ####   ## #      #
+//                                                                                 #                                #   #
+//                                                                                                                   ###
 $(document).ready(() => {
     var $inputbox = $("#inputbox"),
         patterns = {
@@ -418,13 +460,13 @@ $(document).ready(() => {
             part: /^\/part$/i
         };
 
-    //        #                       #    #                                         #                                                 
-    //  # #                           #    #                                         #                                                 
-    // ##### ##    ###   ###   #  #  ###   ###    ##   #  #         ##   ###         # #    ##   #  #  ###   ###    ##    ###    ###   
-    //  # #   #    #  #  #  #  #  #   #    #  #  #  #   ##         #  #  #  #        ##    # ##  #  #  #  #  #  #  # ##  ##     ##     
-    // #####  #    #  #  #  #  #  #   #    #  #  #  #   ##         #  #  #  #        # #   ##     # #  #  #  #     ##      ##     ##   
-    //  # #  ###   #  #  ###    ###    ##  ###    ##   #  #         ##   #  #        #  #   ##     #   ###   #      ##   ###    ###    
-    //                   #                                                                        #    #                               
+    //        #                       #    #                                         #
+    //  # #                           #    #                                         #
+    // ##### ##    ###   ###   #  #  ###   ###    ##   #  #         ##   ###         # #    ##   #  #  ###   ###    ##    ###    ###
+    //  # #   #    #  #  #  #  #  #   #    #  #  #  #   ##         #  #  #  #        ##    # ##  #  #  #  #  #  #  # ##  ##     ##
+    // #####  #    #  #  #  #  #  #   #    #  #  #  #   ##         #  #  #  #        # #   ##     # #  #  #  #     ##      ##     ##
+    //  # #  ###   #  #  ###    ###    ##  ###    ##   #  #         ##   #  #        #  #   ##     #   ###   #      ##   ###    ###
+    //                   #                                                                        #    #
     // Setup input box resizing
     $inputbox.on("keypress", (ev) => {
         if (ev.keyCode === 13 && client.connected) {
@@ -441,7 +483,7 @@ $(document).ready(() => {
             }
 
             $inputbox.val("");
-            
+
             ev.preventDefault();
             return false;
         }
@@ -454,33 +496,48 @@ $(document).ready(() => {
     $inputbox.on("keydown", () => Index.setSize($inputbox));
     $inputbox.on("keyup", () => Index.setSize($inputbox));
 
-    //             #                             ##                                                           ##     #          #     
-    //  # #        #                              #                                                            #                #     
-    // #####  ##   ###    ###  ###   ###    ##    #     ###                ###         ##   ###          ##    #    ##     ##   # #   
-    //  # #  #     #  #  #  #  #  #  #  #  # ##   #    ##                 #  #        #  #  #  #        #      #     #    #     ##    
-    // ##### #     #  #  # ##  #  #  #  #  ##     #      ##          ##   # ##        #  #  #  #        #      #     #    #     # #   
-    //  # #   ##   #  #   # #  #  #  #  #   ##   ###   ###           ##    # #         ##   #  #         ##   ###   ###    ##   #  #  
+    //             #                             ##                                                           ##     #          #
+    //  # #        #                              #                                                            #                #
+    // #####  ##   ###    ###  ###   ###    ##    #     ###                ###         ##   ###          ##    #    ##     ##   # #
+    //  # #  #     #  #  #  #  #  #  #  #  # ##   #    ##                 #  #        #  #  #  #        #      #     #    #     ##
+    // ##### #     #  #  # ##  #  #  #  #  ##     #      ##          ##   # ##        #  #  #  #        #      #     #    #     # #
+    //  # #   ##   #  #   # #  #  #  #  #   ##   ###   ###           ##    # #         ##   #  #         ##   ###   ###    ##   #  #
     // Setup channel tabs.
     $("#channels").on("click", "a", (ev) => {
         ev.preventDefault();
-        $(this).tab("show");
+
+        let currentChannelName = $("#channels li.active").text().substring(1),
+            $channel = $(`#channel-${currentChannelName} .text`);
+
+        channels[`#${currentChannelName}`].isAtBottom = Index.isAtBottom($channel);
+
+        $(this).tab("show").on("shown.bs.tab", () => {
+            currentChannelName = $("#channels li.active").text().substring(1);
+            $channel = $(`#channel-${currentChannelName} .text`);
+            
+            if (channels[`#${currentChannelName}`].isAtBottom) {
+                console.log("setting to bottom");
+                $channel.scrollTop($channel.prop("scrollHeight"));
+            }
+        });
+
+        $(this).find("a").removeClass("text-danger");
     });
 
-    //    #   #                   #   #           #       #                                                                        #                    
-    //    #                       #                       #                                                                        #                    
-    //  ###  ##    # #          ###  ##    # #   ##     ###   ##   ###          ##   ###         # #    ##   #  #   ###    ##    ###   ##   #  #  ###   
-    // #  #   #    # #         #  #   #    # #    #    #  #  # ##  #  #        #  #  #  #        ####  #  #  #  #  ##     # ##  #  #  #  #  #  #  #  #  
-    // #  #   #    # #    ##   #  #   #    # #    #    #  #  ##    #           #  #  #  #        #  #  #  #  #  #    ##   ##    #  #  #  #  ####  #  #  
-    //  ###  ###    #     ##    ###  ###    #    ###    ###   ##   #            ##   #  #        #  #   ##    ###  ###     ##    ###   ##   ####  #  #  
+    //    #   #                   #   #           #       #                                                                        #
+    //    #                       #                       #                                                                        #
+    //  ###  ##    # #          ###  ##    # #   ##     ###   ##   ###          ##   ###         # #    ##   #  #   ###    ##    ###   ##   #  #  ###
+    // #  #   #    # #         #  #   #    # #    #    #  #  # ##  #  #        #  #  #  #        ####  #  #  #  #  ##     # ##  #  #  #  #  #  #  #  #
+    // #  #   #    # #    ##   #  #   #    # #    #    #  #  ##    #           #  #  #  #        #  #  #  #  #  #    ##   ##    #  #  #  #  ####  #  #
+    //  ###  ###    #     ##    ###  ###    #    ###    ###   ##   #            ##   #  #        #  #   ##    ###  ###     ##    ###   ##   ####  #  #
     // Setup user list divider.
     $("#display").on("mousedown", "div.divider", (ev) => {
         var pageX = ev.pageX,
             $users = $(ev.target).next("div.users"),
             width = $users.width();
-        
         $("#display").on("mousemove", (ev) => {
             width += pageX - ev.pageX;
-            $users.width(width);
+            $users.css({"flex-basis": `${width}px`});
             pageX = ev.pageX;
         });
         $("#display").on("mouseup", () => {
@@ -490,12 +547,12 @@ $(document).ready(() => {
         ev.preventDefault();
     });
 
-    //                                      ##     #          #                                   ##     #          #     
-    //                                       #                #                                    #                #     
-    //  ###        #  #   ###    ##   ###    #    ##    ###   # #          ##   ###          ##    #    ##     ##   # #   
-    // #  #        #  #  ##     # ##  #  #   #     #    #  #  ##          #  #  #  #        #      #     #    #     ##    
-    // # ##   ##   #  #    ##   ##    #      #     #    #  #  # #         #  #  #  #        #      #     #    #     # #   
-    //  # #   ##    ###  ###     ##   #     ###   ###   #  #  #  #         ##   #  #         ##   ###   ###    ##   #  #  
+    //                                      ##     #          #                                   ##     #          #
+    //                                       #                #                                    #                #
+    //  ###        #  #   ###    ##   ###    #    ##    ###   # #          ##   ###          ##    #    ##     ##   # #
+    // #  #        #  #  ##     # ##  #  #   #     #    #  #  ##          #  #  #  #        #      #     #    #     ##
+    // # ##   ##   #  #    ##   ##    #      #     #    #  #  # #         #  #  #  #        #      #     #    #     # #
+    //  # #   ##    ###  ###     ##   #     ###   ###   #  #  #  #         ##   #  #         ##   ###   ###    ##   #  #
     $("#display").on("click", "a.userlink", (ev) => {
         var data = $(ev.target).data();
 
@@ -552,12 +609,12 @@ $(document).ready(() => {
         }
     });
 
-    // #            #     #                               #   #     #          #                             ##                                  ##     #          #     
-    // #            #     #                               #         #          #                              #                                   #                #     
-    // ###   #  #  ###   ###    ##   ###          ##    ###  ##    ###    ##   ###    ###  ###   ###    ##    #           ##   ###          ##    #    ##     ##   # #   
-    // #  #  #  #   #     #    #  #  #  #        # ##  #  #   #     #    #     #  #  #  #  #  #  #  #  # ##   #          #  #  #  #        #      #     #    #     ##    
-    // #  #  #  #   #     #    #  #  #  #   ##   ##    #  #   #     #    #     #  #  # ##  #  #  #  #  ##     #          #  #  #  #        #      #     #    #     # #   
-    // ###    ###    ##    ##   ##   #  #   ##    ##    ###  ###     ##   ##   #  #   # #  #  #  #  #   ##   ###          ##   #  #         ##   ###   ###    ##   #  #  
+    // #            #     #                               #   #     #          #                             ##                                  ##     #          #
+    // #            #     #                               #         #          #                              #                                   #                #
+    // ###   #  #  ###   ###    ##   ###          ##    ###  ##    ###    ##   ###    ###  ###   ###    ##    #           ##   ###          ##    #    ##     ##   # #
+    // #  #  #  #   #     #    #  #  #  #        # ##  #  #   #     #    #     #  #  #  #  #  #  #  #  # ##   #          #  #  #  #        #      #     #    #     ##
+    // #  #  #  #   #     #    #  #  #  #   ##   ##    #  #   #     #    #     #  #  # ##  #  #  #  #  ##     #          #  #  #  #        #      #     #    #     # #
+    // ###    ###    ##    ##   ##   #  #   ##    ##    ###  ###     ##   ##   #  #   # #  #  #  #  #   ##   ###          ##   #  #         ##   ###   ###    ##   #  #
     $("#display").on("click", "button.editchannel", (ev) => {
         const username = $(ev.target).closest(".channel-pane").data("username"),
             channelName = `#${username}`,
