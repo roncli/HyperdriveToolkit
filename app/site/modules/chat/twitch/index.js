@@ -8,13 +8,13 @@ const http = require("http"),
 
 require("../../../js/extensions");
 
-// ###          #     #          #      ##          #                       #    ####               #     #                      ###                                  
-//  #                 #          #     #  #                                 #    #                  #                             #                                   
-//  #    #  #  ##    ###    ##   ###   #  #  ###   ##           ###   ##   ###   ###   # #    ##   ###   ##     ##    ##   ###    #    # #    ###   ###   ##    ###   
-//  #    #  #   #     #    #     #  #  ####  #  #   #          #  #  # ##   #    #     ####  #  #   #     #    #     #  #  #  #   #    ####  #  #  #  #  # ##  ##     
-//  #    ####   #     #    #     #  #  #  #  #  #   #     ##    ##   ##     #    #     #  #  #  #   #     #    #     #  #  #  #   #    #  #  # ##   ##   ##      ##   
-//  #    ####  ###     ##   ##   #  #  #  #  ###   ###    ##   #      ##     ##  ####  #  #   ##     ##  ###    ##    ##   #  #  ###   #  #   # #  #      ##   ###    
-//                                           #                  ###                                                                                 ###               
+// ###          #     #          #      ##          #                       #    ####               #     #                      ###
+//  #                 #          #     #  #                                 #    #                  #                             #
+//  #    #  #  ##    ###    ##   ###   #  #  ###   ##           ###   ##   ###   ###   # #    ##   ###   ##     ##    ##   ###    #    # #    ###   ###   ##    ###
+//  #    #  #   #     #    #     #  #  ####  #  #   #          #  #  # ##   #    #     ####  #  #   #     #    #     #  #  #  #   #    ####  #  #  #  #  # ##  ##
+//  #    ####   #     #    #     #  #  #  #  #  #   #     ##    ##   ##     #    #     #  #  #  #   #     #    #     #  #  #  #   #    #  #  # ##   ##   ##      ##
+//  #    ####  ###     ##   ##   #  #  #  #  ###   ###    ##   #      ##     ##  ####  #  #   ##     ##  ###    ##    ##   #  #  ###   #  #   # #  #      ##   ###
+//                                           #                  ###                                                                                 ###
 TwitchApi.prototype.getEmoticonImages = function(callback) {
     this._executeRequest(
         {
@@ -25,23 +25,23 @@ TwitchApi.prototype.getEmoticonImages = function(callback) {
     );
 };
 
-//  #####           #     #            #     
-//    #                   #            #     
-//    #    #   #   ##    ####    ###   # ##  
-//    #    #   #    #     #     #   #  ##  # 
-//    #    # # #    #     #     #      #   # 
-//    #    # # #    #     #  #  #   #  #   # 
-//    #     # #    ###     ##    ###   #   # 
+//  #####           #     #            #
+//    #                   #            #
+//    #    #   #   ##    ####    ###   # ##
+//    #    #   #    #     #     #   #  ##  #
+//    #    # # #    #     #     #      #   #
+//    #    # # #    #     #  #  #   #  #   #
+//    #     # #    ###     ##    ###   #   #
 /**
  * A class to connect to Twitch chat.
  */
 class Twitch extends Chat {
-    //                           #                       #                
-    //                           #                       #                
-    //  ##    ##   ###    ###   ###   ###   #  #   ##   ###    ##   ###   
-    // #     #  #  #  #  ##      #    #  #  #  #  #      #    #  #  #  #  
-    // #     #  #  #  #    ##    #    #     #  #  #      #    #  #  #     
-    //  ##    ##   #  #  ###      ##  #      ###   ##     ##   ##   #     
+    //                           #                       #
+    //                           #                       #
+    //  ##    ##   ###    ###   ###   ###   #  #   ##   ###    ##   ###
+    // #     #  #  #  #  ##      #    #  #  #  #  #      #    #  #  #  #
+    // #     #  #  #  #    ##    #    #     #  #  #      #    #  #  #
+    //  ##    ##   #  #  ###      ##  #      ###   ##     ##   ##   #
     /**
      * Creates an instance of Twitch chat.
      * @param {object} settings The settings used to connect to Twitch.
@@ -54,12 +54,12 @@ class Twitch extends Chat {
         this.api = new TwitchApi(settings.twitch);
     }
 
-    //                                      #             #  
-    //                                      #             #  
-    //  ##    ##   ###   ###    ##    ##   ###    ##    ###  
-    // #     #  #  #  #  #  #  # ##  #      #    # ##  #  #  
-    // #     #  #  #  #  #  #  ##    #      #    ##    #  #  
-    //  ##    ##   #  #  #  #   ##    ##     ##   ##    ###  
+    //                                      #             #
+    //                                      #             #
+    //  ##    ##   ###   ###    ##    ##   ###    ##    ###
+    // #     #  #  #  #  #  #  # ##  #      #    # ##  #  #
+    // #     #  #  #  #  #  #  ##    #      #    ##    #  #
+    //  ##    ##   #  #  #  #   ##    ##     ##   ##    ###
     /**
      * Determines whether you are connected to Twitch.
      * @return {bool} Whether you are connected.
@@ -68,12 +68,12 @@ class Twitch extends Chat {
         return this.tmi.readyState() === "OPEN";
     }
 
-    //                                      #    
-    //                                      #    
-    //  ##    ##   ###   ###    ##    ##   ###   
-    // #     #  #  #  #  #  #  # ##  #      #    
-    // #     #  #  #  #  #  #  ##    #      #    
-    //  ##    ##   #  #  #  #   ##    ##     ##  
+    //                                      #
+    //                                      #
+    //  ##    ##   ###   ###    ##    ##   ###
+    // #     #  #  #  #  #  #  # ##  #      #
+    // #     #  #  #  #  #  #  ##    #      #
+    //  ##    ##   #  #  #  #   ##    ##     ##
     /**
      * Connects to Twitch chat.
      */
@@ -125,6 +125,7 @@ class Twitch extends Chat {
                 if (userstate.emotes) {
                     let emotes = {},
                         lastEnd = 0;
+
                     Object.keys(userstate.emotes).forEach((id) => {
                         var ranges = userstate.emotes[id];
                         ranges.forEach((range) => {
@@ -132,7 +133,8 @@ class Twitch extends Chat {
                             emotes[+matches[1]] = {start: +matches[1], end: +matches[2], id: id};
                         });
                     });
-                    Object.keys(emotes).sort((a, b) => a.start - b.start).forEach((start) => {
+
+                    Object.keys(emotes).sort((a, b) => a - b).forEach((start) => {
                         var emote = emotes[start];
 
                         if (start > lastEnd) {
@@ -146,6 +148,7 @@ class Twitch extends Chat {
 
                         lastEnd = emote.end + 1;
                     });
+
                     if (lastEnd < text.length) {
                         span.append($("<span></span>").text(text.substring(lastEnd)).html());
                     }
@@ -187,12 +190,12 @@ class Twitch extends Chat {
         });
     }
 
-    //              #    #                  #                   #  
-    //              #    #                                      #  
-    //  ###  #  #  ###   ###    ##   ###   ##    ####   ##    ###  
-    // #  #  #  #   #    #  #  #  #  #  #   #      #   # ##  #  #  
-    // # ##  #  #   #    #  #  #  #  #      #     #    ##    #  #  
-    //  # #   ###    ##  #  #   ##   #     ###   ####   ##    ###  
+    //              #    #                  #                   #
+    //              #    #                                      #
+    //  ###  #  #  ###   ###    ##   ###   ##    ####   ##    ###
+    // #  #  #  #   #    #  #  #  #  #  #   #      #   # ##  #  #
+    // # ##  #  #   #    #  #  #  #  #      #     #    ##    #  #
+    //  # #   ###    ##  #  #   ##   #     ###   ####   ##    ###
     /**
      * Determines whether you are authorized to connect to Twitch chat.
      * @return {bool} Whether you are authorized.
@@ -201,12 +204,12 @@ class Twitch extends Chat {
         return !!(this.accessToken);
     }
 
-    //              #    #                  #                
-    //              #    #                                   
-    //  ###  #  #  ###   ###    ##   ###   ##    ####   ##   
-    // #  #  #  #   #    #  #  #  #  #  #   #      #   # ##  
-    // # ##  #  #   #    #  #  #  #  #      #     #    ##    
-    //  # #   ###    ##  #  #   ##   #     ###   ####   ##   
+    //              #    #                  #
+    //              #    #
+    //  ###  #  #  ###   ###    ##   ###   ##    ####   ##
+    // #  #  #  #   #    #  #  #  #  #  #   #      #   # ##
+    // # ##  #  #   #    #  #  #  #  #      #     #    ##
+    //  # #   ###    ##  #  #   ##   #     ###   ####   ##
     /**
      * Authorizes you to use Twitch chat.
      * @param {string} username The username to authorize with.
@@ -214,7 +217,7 @@ class Twitch extends Chat {
      */
     authorize(username, accessToken) {
         var twitch = this;
-        
+
         return new Promise((resolve, reject) => {
             var api = twitch.api;
 
@@ -239,7 +242,7 @@ class Twitch extends Chat {
                 }
             }).then(resolve).catch(() => {
                 var win = new electron.remote.BrowserWindow({width: 800, height: 600, parent: electron.remote.BrowserWindow.getAllWindows().find((w) => w.getTitle() === "Hyperdrive Toolkit"), modal: true, title: "Hyperdrive Toolkit - Waiting for Twitch OAuth"});
-                
+
                 win.loadURL(`file://${__dirname}/twitch.htm`);
                 win.setMenu(null);
 
@@ -275,13 +278,13 @@ class Twitch extends Chat {
         });
     }
 
-    //   #          #          
-                            
-    //   #    ##   ##    ###   
-    //   #   #  #   #    #  #  
-    //   #   #  #   #    #  #  
-    // # #    ##   ###   #  #  
-    //  #                      
+    //   #          #
+
+    //   #    ##   ##    ###
+    //   #   #  #   #    #  #
+    //   #   #  #   #    #  #
+    // # #    ##   ###   #  #
+    //  #
     /**
      * Joins you to a channel.
      * @param {string} channel The channel to join.
@@ -291,13 +294,13 @@ class Twitch extends Chat {
         return this.tmi.join(channel);
     }
 
-    //                    #    
-    //                    #    
-    // ###    ###  ###   ###   
-    // #  #  #  #  #  #   #    
-    // #  #  # ##  #      #    
-    // ###    # #  #       ##  
-    // #                       
+    //                    #
+    //                    #
+    // ###    ###  ###   ###
+    // #  #  #  #  #  #   #
+    // #  #  # ##  #      #
+    // ###    # #  #       ##
+    // #
     /**
      * Parts you from a channel.
      * @param {string} channel The channel to part.
@@ -307,12 +310,12 @@ class Twitch extends Chat {
         return this.tmi.part(channel);
     }
 
-    //                       #  
-    //                       #  
-    //  ###    ##   ###    ###  
-    // ##     # ##  #  #  #  #  
-    //   ##   ##    #  #  #  #  
-    // ###     ##   #  #   ###  
+    //                       #
+    //                       #
+    //  ###    ##   ###    ###
+    // ##     # ##  #  #  #  #
+    //   ##   ##    #  #  #  #
+    // ###     ##   #  #   ###
     /**
      * Sends a command to a channel.
      * @param {string} channel The channel to send the command to.
@@ -323,84 +326,84 @@ class Twitch extends Chat {
         return this.tmi.say(channel, command);
     }
 
-    // #                 
-    // #                 
-    // ###    ###  ###   
-    // #  #  #  #  #  #  
-    // #  #  # ##  #  #  
-    // ###    # #  #  #  
+    // #
+    // #
+    // ###    ###  ###
+    // #  #  #  #  #  #
+    // #  #  # ##  #  #
+    // ###    # #  #  #
     ban(channel, username, reason) {
         return this.tmi.ban(channel, username, reason);
     }
 
-    //             #                 
-    //             #                 
-    // #  #  ###   ###    ###  ###   
-    // #  #  #  #  #  #  #  #  #  #  
-    // #  #  #  #  #  #  # ##  #  #  
-    //  ###  #  #  ###    # #  #  #  
+    //             #
+    //             #
+    // #  #  ###   ###    ###  ###
+    // #  #  #  #  #  #  #  #  #  #
+    // #  #  #  #  #  #  # ##  #  #
+    //  ###  #  #  ###    # #  #  #
     unban(channel, username) {
         return this.tmi.unban(channel, username);
     }
 
-    //  #     #                             #    
-    //  #                                   #    
-    // ###   ##    # #    ##    ##   #  #  ###   
-    //  #     #    ####  # ##  #  #  #  #   #    
-    //  #     #    #  #  ##    #  #  #  #   #    
-    //   ##  ###   #  #   ##    ##    ###    ##  
+    //  #     #                             #
+    //  #                                   #
+    // ###   ##    # #    ##    ##   #  #  ###
+    //  #     #    ####  # ##  #  #  #  #   #
+    //  #     #    #  #  ##    #  #  #  #   #
+    //   ##  ###   #  #   ##    ##    ###    ##
     timeout(channel, username, seconds, reason) {
         return this.tmi.timeout(channel, username, seconds, reason);
     }
 
-    //                #  
-    //                #  
-    // # #    ##    ###  
-    // ####  #  #  #  #  
-    // #  #  #  #  #  #  
-    // #  #   ##    ###  
+    //                #
+    //                #
+    // # #    ##    ###
+    // ####  #  #  #  #
+    // #  #  #  #  #  #
+    // #  #   ##    ###
     mod(channel, username) {
         return this.tmi.mod(channel, username);
     }
 
-    //                            #  
-    //                            #  
-    // #  #  ###   # #    ##    ###  
-    // #  #  #  #  ####  #  #  #  #  
-    // #  #  #  #  #  #  #  #  #  #  
-    //  ###  #  #  #  #   ##    ###  
+    //                            #
+    //                            #
+    // #  #  ###   # #    ##    ###
+    // #  #  #  #  ####  #  #  #  #
+    // #  #  #  #  #  #  #  #  #  #
+    //  ###  #  #  #  #   ##    ###
     unmod(channel, username) {
         return this.tmi.unmod(channel, username);
     }
 
-    //   #         ##    ##                
-    //  # #         #     #                
-    //  #     ##    #     #     ##   #  #  
-    // ###   #  #   #     #    #  #  #  #  
-    //  #    #  #   #     #    #  #  ####  
-    //  #     ##   ###   ###    ##   ####  
+    //   #         ##    ##
+    //  # #         #     #
+    //  #     ##    #     #     ##   #  #
+    // ###   #  #   #     #    #  #  #  #
+    //  #    #  #   #     #    #  #  ####
+    //  #     ##   ###   ###    ##   ####
     follow(username) {
         // TODO: Allow user to set whether they receive notifications when the channel goes live.
         return this.api.userFollowChannel(this.username, username, this.accessToken);
     }
 
-    //               #         ##    ##                
-    //              # #         #     #                
-    // #  #  ###    #     ##    #     #     ##   #  #  
-    // #  #  #  #  ###   #  #   #     #    #  #  #  #  
-    // #  #  #  #   #    #  #   #     #    #  #  ####  
-    //  ###  #  #   #     ##   ###   ###    ##   ####  
+    //               #         ##    ##
+    //              # #         #     #
+    // #  #  ###    #     ##    #     #     ##   #  #
+    // #  #  #  #  ###   #  #   #     #    #  #  #  #
+    // #  #  #  #   #    #  #   #     #    #  #  ####
+    //  ###  #  #   #     ##   ###   ###    ##   ####
     unfollow(username) {
         return this.api.userUnfollowChannel(this.username, username, this.accessToken);
     }
 
-    //              #     ##    #                            
-    //              #    #  #   #                            
-    //  ###   ##   ###    #    ###   ###    ##    ###  # #   
-    // #  #  # ##   #      #    #    #  #  # ##  #  #  ####  
-    //  ##   ##     #    #  #   #    #     ##    # ##  #  #  
-    // #      ##     ##   ##     ##  #      ##    # #  #  #  
-    //  ###                                                  
+    //              #     ##    #
+    //              #    #  #   #
+    //  ###   ##   ###    #    ###   ###    ##    ###  # #
+    // #  #  # ##   #      #    #    #  #  # ##  #  #  ####
+    //  ##   ##     #    #  #   #    #     ##    # ##  #  #
+    // #      ##     ##   ##     ##  #      ##    # #  #  #
+    //  ###
     /**
      * Gets data for a stream.
      * @param {string} channel The channel to get stream data for.
@@ -421,13 +424,13 @@ class Twitch extends Chat {
         });
     }
 
-    //              #     ##   #                             ##    
-    //              #    #  #  #                              #    
-    //  ###   ##   ###   #     ###    ###  ###   ###    ##    #    
-    // #  #  # ##   #    #     #  #  #  #  #  #  #  #  # ##   #    
-    //  ##   ##     #    #  #  #  #  # ##  #  #  #  #  ##     #    
-    // #      ##     ##   ##   #  #   # #  #  #  #  #   ##   ###   
-    //  ###                                                        
+    //              #     ##   #                             ##
+    //              #    #  #  #                              #
+    //  ###   ##   ###   #     ###    ###  ###   ###    ##    #
+    // #  #  # ##   #    #     #  #  #  #  #  #  #  #  # ##   #
+    //  ##   ##     #    #  #  #  #  # ##  #  #  #  #  ##     #
+    // #      ##     ##   ##   #  #   # #  #  #  #  #   ##   ###
+    //  ###
     /**
      * Gets data for a channel.
      * @param {string} channel The channel to get data for.
@@ -448,16 +451,16 @@ class Twitch extends Chat {
         });
     }
 
-    //              #     ##   #            #     #                       
-    //              #    #  #  #            #     #                       
-    //  ###   ##   ###   #     ###    ###  ###   ###    ##   ###    ###   
-    // #  #  # ##   #    #     #  #  #  #   #     #    # ##  #  #  ##     
-    //  ##   ##     #    #  #  #  #  # ##   #     #    ##    #       ##   
-    // #      ##     ##   ##   #  #   # #    ##    ##   ##   #     ###    
-    //  ###                                                               
+    //              #     ##   #            #     #
+    //              #    #  #  #            #     #
+    //  ###   ##   ###   #     ###    ###  ###   ###    ##   ###    ###
+    // #  #  # ##   #    #     #  #  #  #   #     #    # ##  #  #  ##
+    //  ##   ##     #    #  #  #  #  # ##   #     #    ##    #       ##
+    // #      ##     ##   ##   #  #   # #    ##    ##   ##   #     ###
+    //  ###
     /**
      * Gets the list of chatters for a channel.
-     * @param {string} channel The chatter to get the list of chatters for.
+     * @param {string} channel The channel to get the list of chatters for.
      * @return {Promise} A promise that resolves when the chatters are sent.
      */
     getChatters(channel) {
@@ -475,12 +478,12 @@ class Twitch extends Chat {
         });
     }
 
-    //               #     ##    #           #                 
-    //               #    #  #   #           #                 
-    //  ###    ##   ###    #    ###    ###  ###   #  #   ###   
-    // ##     # ##   #      #    #    #  #   #    #  #  ##     
-    //   ##   ##     #    #  #   #    # ##   #    #  #    ##   
-    // ###     ##     ##   ##     ##   # #    ##   ###  ###    
+    //               #     ##    #           #
+    //               #    #  #   #           #
+    //  ###    ##   ###    #    ###    ###  ###   #  #   ###
+    // ##     # ##   #      #    #    #  #   #    #  #  ##
+    //   ##   ##     #    #  #   #    # ##   #    #  #    ##
+    // ###     ##     ##   ##     ##   # #    ##   ###  ###
     /**
      * Sets the channel's status.
      * @param {string} channel The channel to set the status for.

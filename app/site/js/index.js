@@ -1,7 +1,6 @@
 const path = require("path"),
     electron = require("electron"),
-    remote = electron.remote,
-    app = remote.app,
+    {remote, remote: {Menu, MenuItem, app}} = electron,
     win = remote.getCurrentWindow(),
     tinycolor = require("tinycolor2"),
     Twitch = require("./modules/chat/twitch"), // TODO: Load modules
@@ -124,6 +123,11 @@ class Index {
      */
     static updateStream(channel) {
         var channelName = channel.substring(1);
+
+        if (!channels[channel]) {
+            return;
+        }
+        
         client.getStream(channelName).then((stream) => {
             if (stream) {
                 channels[channel].stream = stream;
@@ -202,13 +206,17 @@ class Index {
 
         $channel.append(html);
 
+        while ($channel.children().length > 1000) {
+            $channel.children().first().remove(); // TODO: Investigate possible memory leak?
+        }
+
         if (atBottom) {
             $channel.scrollTop($channel.prop("scrollHeight"));
         }
 
         const thisChannelName = $channel.parent().parent().data("username"),
             activeChannelName = $("#channels li.active").text().substring(1);
-        
+
         if (thisChannelName !== activeChannelName) {
             $(`#tab-${thisChannelName}`).find("a").addClass("text-danger");
         }
@@ -248,7 +256,7 @@ client.on("message", (channel, username, usercolor, displayname, html, text) => 
         }
     }
 
-    if (text.indexOf(win.data.userSettings.data.twitch.username) === -1) {
+    if ($("<div></div>").append(html).text().indexOf(win.data.userSettings.data.twitch.username) === -1) {
         Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}</span>`);
     } else {
         Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span></span>`);
@@ -460,6 +468,14 @@ $(document).ready(() => {
             part: /^\/part$/i
         };
 
+    Index.tabContextMenu = new Menu();
+    Index.tabContextMenu.append(new MenuItem({
+        label: "Close",
+        click: () => {
+            client.part($("#channels li.context").text());
+        }
+    }));
+
     //        #                       #    #                                         #
     //  # #                           #    #                                         #
     // ##### ##    ###   ###   #  #  ###   ###    ##   #  #         ##   ###         # #    ##   #  #  ###   ###    ##    ###    ###
@@ -496,6 +512,10 @@ $(document).ready(() => {
     $inputbox.on("keydown", () => Index.setSize($inputbox));
     $inputbox.on("keyup", () => Index.setSize($inputbox));
 
+    $("#inputbox").emojioneArea({
+        shortcuts: false
+    });
+
     //             #                             ##                                                           ##     #          #
     //  # #        #                              #                                                            #                #
     // #####  ##   ###    ###  ###   ###    ##    #     ###                ###         ##   ###          ##    #    ##     ##   # #
@@ -511,17 +531,16 @@ $(document).ready(() => {
 
         channels[`#${currentChannelName}`].isAtBottom = Index.isAtBottom($channel);
 
-        $(this).tab("show").on("shown.bs.tab", () => {
+        $(ev.target).tab("show").on("shown.bs.tab", () => {
             currentChannelName = $("#channels li.active").text().substring(1);
             $channel = $(`#channel-${currentChannelName} .text`);
-            
+
             if (channels[`#${currentChannelName}`].isAtBottom) {
-                console.log("setting to bottom");
                 $channel.scrollTop($channel.prop("scrollHeight"));
             }
         });
 
-        $(this).find("a").removeClass("text-danger");
+        $(ev.target).removeClass("text-danger");
     });
 
     //    #   #                   #   #           #       #                                                                        #
@@ -547,6 +566,20 @@ $(document).ready(() => {
         ev.preventDefault();
     });
 
+    // ##     #                #                             ##           #          #                                                               #
+    //  #                      #                              #           #          #                                                               #
+    //  #    ##           ##   ###    ###  ###   ###    ##    #          ###    ###  ###          ##   ###         # #    ##   #  #   ###    ##    ###   ##   #  #  ###
+    //  #     #          #     #  #  #  #  #  #  #  #  # ##   #    ####   #    #  #  #  #        #  #  #  #        ####  #  #  #  #  ##     # ##  #  #  #  #  #  #  #  #
+    //  #     #     ##   #     #  #  # ##  #  #  #  #  ##     #           #    # ##  #  #        #  #  #  #        #  #  #  #  #  #    ##   ##    #  #  #  #  ####  #  #
+    // ###   ###    ##    ##   #  #   # #  #  #  #  #   ##   ###           ##   # #  ###          ##   #  #        #  #   ##    ###  ###     ##    ###   ##   ####  #  #
+    $("#channels").on("mousedown", "li.channel-tab", (ev) => {
+        if (ev.which === 3) {
+            $("#channels li.channel-tab").removeClass("context");
+            $(ev.target).closest("li").addClass("context");
+            Index.tabContextMenu.popup();
+        }
+    });
+
     //                                      ##     #          #                                   ##     #          #
     //                                       #                #                                    #                #
     //  ###        #  #   ###    ##   ###    #    ##    ###   # #          ##   ###          ##    #    ##     ##   # #
@@ -554,15 +587,18 @@ $(document).ready(() => {
     // # ##   ##   #  #    ##   ##    #      #     #    #  #  # #         #  #  #  #        #      #     #    #     # #
     //  # #   ##    ###  ###     ##   #     ###   ###   #  #  #  #         ##   #  #         ##   ###   ###    ##   #  #
     $("#display").on("click", "a.userlink", (ev) => {
-        var data = $(ev.target).data();
+        const data = $(ev.target).data(),
+            $text = $("<div></div>");
+
+        $(`#display .text .user-${data.username}`).each((index, value) => $text.append($(value).clone()));
 
         if (profileWin) {
-            profileWin.emit("profile-set", data.channel, data.username, $(`#display .text .user-${data.username}`).map((index, el) => $(el).html()).toArray().join("")); // TODO: Consolidate user data, possibly into the channel user array.
+            profileWin.emit("profile-set", data.channel, data.username, $text.html());
         } else {
             profileWin = new electron.remote.BrowserWindow({width: 640, height: 480, resizable: false, title: `Hyperdrive Toolkit - Profile - ${data.username} on ${data.channel}`});
 
             profileWin.on("profile-get", () => {
-                profileWin.emit("profile-set", data.channel, data.username, $(`#display .text .user-${data.username}`).map((index, el) => $(el).html()).toArray().join("")); // TODO: Consolidate user data, possibly into the channel user array.
+                profileWin.emit("profile-set", data.channel, data.username, $text.html());
                 profileWin.emit("chat-settings", win.data.appSettings.data.chat);
             });
 

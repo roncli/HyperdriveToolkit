@@ -11,6 +11,14 @@ module.exports = {
         clientId: "xetz9cvboym6sr1iz19qr0kubr2nl1",
         clientSecret: undefined,
         redirectUri: "http://127.0.0.1:65100/token",
-        scopes: ["chat_login", "channel_editor", "channel_commercial", "user_read", "channel_subscriptions", "user_follows_edit"]
+        scopes: [
+            "channel_commercial",
+            "channel_editor",
+            "channel_read",
+            "channel_subscriptions",
+            "chat_login",
+            "user_follows_edit",
+            "user_read"
+        ]
     }
 };

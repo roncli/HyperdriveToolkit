@@ -25,6 +25,10 @@ h3 {
     user-select: text;
 }
 
+#user-chat > span {
+    display: block;
+}
+
 a.userlink, a.userlink:hover, a.userlink:visited {
     text-decoration: none;
     color: inherit;
