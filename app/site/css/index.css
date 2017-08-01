@@ -43,6 +43,12 @@ body {
     word-wrap: break-word;
 }
 
+#display > .tab-pane > .chat > .text img.twitch-badge,
+#display > .tab-pane > .users img.twitch-badge {
+    height: 18px;
+    padding-right: 3px;
+}
+
 #display > .tab-pane > .chat > .text img.emote {
     height: 28px;
 }
@@ -113,6 +119,8 @@ body {
     flex-shrink: 0;
     min-width: 75px;
     max-width: 250px;
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 #input {

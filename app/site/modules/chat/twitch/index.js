@@ -106,7 +106,6 @@ class Twitch extends Chat {
 
             twitch.tmi.on("connected", (address, port) => {
                 twitch.emit("connected", address, port);
-                //twitch.api.getEmoticonImages((err, emotes) => console.log(err, emotes));
             });
 
             twitch.tmi.on("disconnected", (message) => {
@@ -120,13 +119,21 @@ class Twitch extends Chat {
                 // });
             });
 
+            //  #           #     #          #            #           #                        #    # #                                               # #   #
+            //  #                 #          #            #                                   #     # #                                               # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ####  # ##  ##     ##     #  #  #  #  # ##          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  ##      ##     ##   # ##   ##   ##            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #
+            //                                                                                                                            ###
             twitch.tmi.on("message", (channel, userstate, text, self) => {
                 var span = $("<span></span>");
+
                 if (userstate.emotes) {
                     let emotes = {},
                         lastEnd = 0;
 
-                    Object.keys(userstate.emotes).forEach((id) => {
+                        Object.keys(userstate.emotes).forEach((id) => {
                         var ranges = userstate.emotes[id];
                         ranges.forEach((range) => {
                             var matches = rangeRegex.exec(range);
@@ -160,7 +167,7 @@ class Twitch extends Chat {
                     userstate.color = defaultColors[(userstate.username.charCodeAt(0) + userstate.username.charCodeAt(userstate.username.length - 1)) % defaultColors.length];
                 }
 
-                twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], span.html(), text);
+                twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
             });
 
             twitch.tmi.on("join", (channel, username, self) => {
@@ -467,6 +474,7 @@ class Twitch extends Chat {
         return new Promise((resolve, reject) => {
             http.get("http://tmi.twitch.tv/group/user/" + channel + "/chatters", (res) => {
                 var body = "";
+
                 res.on("data", (chunk) => {
                     body += chunk;
                 });
@@ -475,6 +483,61 @@ class Twitch extends Chat {
                 });
                 // TODO: Handle errors on res
             });
+        });
+    }
+
+    //              #     ##   #                             ##    ###            #
+    //              #    #  #  #                              #    #  #           #
+    //  ###   ##   ###   #     ###    ###  ###   ###    ##    #    ###    ###   ###   ###   ##    ###
+    // #  #  # ##   #    #     #  #  #  #  #  #  #  #  # ##   #    #  #  #  #  #  #  #  #  # ##  ##
+    //  ##   ##     #    #  #  #  #  # ##  #  #  #  #  ##     #    #  #  # ##  #  #   ##   ##      ##
+    // #      ##     ##   ##   #  #   # #  #  #  #  #   ##   ###   ###    # #   ###  #      ##   ###
+    //  ###                                                                           ###
+    /**
+     * Gets the user badges that can be used in a channel.
+     * @param {string} channelID The channel ID to get user badges for.
+     * @return {Promise} A promise that resolves when the badges are sent.
+     */
+    getChannelBadges(channelID) {
+        return new Promise((resolve, reject) => {
+            const fxs = [
+                new Promise((resolve, reject) => {
+                    http.get("http://badges.twitch.tv/v1/badges/global/display", (res) => {
+                        var body = "";
+
+                        res.on("data", (chunk) => {
+                            body += chunk;
+                        });
+                        res.on("end", () => {
+                            JSON.tryParse(body).then(resolve).catch(reject);
+                        });
+                        // TODO: Handle errors on res
+                    });
+                }),
+                new Promise((resolve, reject) => {
+                    http.get(`http://badges.twitch.tv/v1/badges/channels/${channelID}/display?language=en`, (res) => { // TODO: Languages!
+                        var body = "";
+
+                        res.on("data", (chunk) => {
+                            body += chunk;
+                        });
+                        res.on("end", () => {
+                            JSON.tryParse(body).then(resolve).catch(reject);
+                        });
+                        // TODO: Handle errors on res
+                    });
+                }),
+            ];
+
+            Promise.all(fxs).then((badgeArray) => {
+                const [{badge_sets: globalBadges}, {badge_sets: channelBadges}] = badgeArray;
+
+                Object.keys(channelBadges).forEach((key) => {
+                    ({[key]: globalBadges[key]} = channelBadges);
+                });
+
+                resolve(globalBadges);
+            }).catch(reject);
         });
     }
 

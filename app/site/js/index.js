@@ -127,25 +127,77 @@ class Index {
         if (!channels[channel]) {
             return;
         }
-        
+
         client.getStream(channelName).then((stream) => {
-            if (stream) {
-                channels[channel].stream = stream;
-                channels[channel].channel = stream.channel;
-                Index.updateTitle(channel);
-            } else {
-                delete channels[channel].stream;
-                client.getChannel(channelName).then((channelData) => {
-                    channels[channel].channel = channelData;
+            return new Promise((resolve, reject) => {
+                if (stream) {
+                    channels[channel].stream = stream;
+                    channels[channel].channel = stream.channel;
                     Index.updateTitle(channel);
+                    resolve();
+                } else {
+                    delete channels[channel].stream;
+                    client.getChannel(channelName).then((channelData) => {
+                        channels[channel].channel = channelData;
+                        Index.updateTitle(channel);
+                        resolve();
+                    }).catch(reject);
+                }
+            });
+        }).then(() => {
+            if (!channels[channel].badges) {
+                client.getChannelBadges(channels[channel].channel._id).then((badges) => {
+                    channels[channel].badges = badges;
                 });
             }
         });
 
+        Index.listUsers(channel);
+    }
+
+    // ##     #            #    #  #
+    //  #                  #    #  #
+    //  #    ##     ###   ###   #  #   ###    ##   ###    ###
+    //  #     #    ##      #    #  #  ##     # ##  #  #  ##
+    //  #     #      ##    #    #  #    ##   ##    #       ##
+    // ###   ###   ###      ##   ##   ###     ##   #     ###
+    static listUsers(channel) {
+        var channelName = channel.substring(1);
+
         client.getChatters(channelName).then((chatters) => {
             channels[channel].chatters = chatters;
             Index.updateTitle(channel);
+
+            Index.displayUsers(channel);
         });
+    }
+
+    //    #   #                 ##                #  #
+    //    #                      #                #  #
+    //  ###  ##     ###   ###    #     ###  #  #  #  #   ###    ##   ###    ###
+    // #  #   #    ##     #  #   #    #  #  #  #  #  #  ##     # ##  #  #  ##
+    // #  #   #      ##   #  #   #    # ##   # #  #  #    ##   ##    #       ##
+    //  ###  ###   ###    ###   ###    # #    #    ##   ###     ##   #     ###
+    //                    #                  #
+    static displayUsers(channel) {
+        const channelName = channel.substring(1),
+            users = [];
+
+        if (!channels[channel].chatters) {
+            return;
+        }
+
+        Object.keys(channels[channel].chatters.chatters).forEach((key) => {
+            channels[channel].chatters.chatters[key].forEach((user) => {
+                users.push(user);
+            });
+        });
+
+        $(`#channel-${channelName} .users`).html(
+            users.map((username) => {
+                return `${channels[channel].userBadges[username] || ""}${username}`;
+            }).join("<br />")
+        );
     }
 
     //                #         #          ###    #     #    ##
@@ -237,12 +289,13 @@ win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.
 // #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  ##      ##     ##   # ##   ##   ##            #
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #
 //                                                                                                    ###
-client.on("message", (channel, username, usercolor, displayname, html, text) => {
+client.on("message", (channel, username, usercolor, displayname, badges, html, text) => {
     var color = tinycolor(usercolor),
         background = tinycolor(win.data.appSettings.data.chat.colors.chat.background),
         brightness = background.getBrightness(),
         difference = brightness - color.getBrightness(),
-        channelName = channel.substring(1);
+        channelName = channel.substring(1),
+        badgeHtml = "";
 
     if (difference > 0 && difference < 50) {
         usercolor = color.darken(50);
@@ -256,11 +309,27 @@ client.on("message", (channel, username, usercolor, displayname, html, text) => 
         }
     }
 
-    if ($("<div></div>").append(html).text().indexOf(win.data.userSettings.data.twitch.username) === -1) {
-        Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}</span>`);
-    } else {
-        Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span></span>`);
+    if (badges) {
+        Object.keys(badges).forEach((key) => {
+            const {[key]: version} = badges,
+                badge = channels[channel].badges[key].versions[version];
+
+            badgeHtml += $("<img></img>").attr({
+                src: badge.image_url_1x,
+                title: badge.title
+            }).addClass("twitch-badge")[0].outerHTML;
+        });
+
+        channels[channel].userBadges[username] = badgeHtml;
     }
+
+    if ($("<div></div>").append(html).text().indexOf(win.data.userSettings.data.twitch.username) === -1) {
+        Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}${badgeHtml}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: ${html}</span>`);
+    } else {
+        Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}${badgeHtml}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span></span>`);
+    }
+
+    Index.displayUsers(channel);
 });
 
 //       ##     #                 #                        #    # #    #          #           # #   #
@@ -274,9 +343,9 @@ client.on("join", (channel, username, self) => {
     var channelName = channel.substring(1);
     if (self) {
         channels[channel] = {
-            users: [],
             interval: setInterval(() => Index.updateStream(channel), 60000),
-            isAtBottom: true
+            isAtBottom: true,
+            userBadges: {}
         };
         $("#channels").append(Index.getTab(channelName));
         $("#display").append(Index.getPanel(channelName));
@@ -285,9 +354,8 @@ client.on("join", (channel, username, self) => {
         }
         Index.updateStream(channel);
     }
-    channels[channel].users.push(username);
     Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="join">${Index.timestamp()}${(self ? "You have" : `${Index.userLink(channel, username)} has`)} joined ${channel}</span>`);
-    $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
+    Index.displayUsers(channel);
 });
 
 //       ##     #                 #                        #    # #                     #     # #   #
@@ -309,9 +377,8 @@ client.on("part", (channel, username, self) => {
             $(`.channel-tab:nth-child(${index === Object.keys(channels).length ? index : index + 1}) > a`).tab("show");
         }
     } else {
-        channels[channel].users.splice(channels[channel].users.indexOf(username), 1);
         Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="part">${Index.timestamp()}${`${Index.userLink(channel, username)}`} has left ${channel}</span>`);
-        $(`#channel-${channelName} .users`).html(channels[channel].users.join("<br />"));
+        Index.displayUsers(channel);
     }
 });
 
@@ -511,10 +578,6 @@ $(document).ready(() => {
     $inputbox.on("drop", () => Index.setSize($inputbox));
     $inputbox.on("keydown", () => Index.setSize($inputbox));
     $inputbox.on("keyup", () => Index.setSize($inputbox));
-
-    $("#inputbox").emojioneArea({
-        shortcuts: false
-    });
 
     //             #                             ##                                                           ##     #          #
     //  # #        #                              #                                                            #                #
