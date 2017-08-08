@@ -88,6 +88,7 @@ class Index {
     static settingsChanged() {
         Utilities.changeCss("#display", `font-family: "${win.data.appSettings.data.chat.font.face}"; font-size: ${win.data.appSettings.data.chat.font.size}px;`, $); // TODO: Potentially have a max size for title, input box
         Utilities.changeCss("#display div.chat", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; background-color: ${win.data.appSettings.data.chat.colors.chat.background};`, $);
+        Utilities.changeCss("#display div.chat a.external-link", `color: ${win.data.appSettings.data.chat.colors.chat.foreground}; text-decoration: underline;`, $);
         Utilities.changeCss("#display div.chat .info", `color: ${win.data.appSettings.data.chat.colors.chat.info};`, $);
         Utilities.changeCss("#display div.chat .join", `color: ${win.data.appSettings.data.chat.colors.chat.join};`, $);
         Utilities.changeCss("#display div.chat .part", `color: ${win.data.appSettings.data.chat.colors.chat.part};`, $);
@@ -180,8 +181,18 @@ class Index {
     //  ###  ###   ###    ###   ###    # #    #    ##   ###     ##   #     ###
     //                    #                  #
     static displayUsers(channel) {
-        const channelName = channel.substring(1),
-            users = [];
+        const channelName = channel.substring(1);
+
+        if (channels[channel].chatters && channels[channel].chatters.chatter_count >= 1000) {
+            $(`#channel-${channelName} .divider`).hide();
+            $(`#channel-${channelName} .users`).hide();
+            return;
+        } else {
+            $(`#channel-${channelName} .divider`).show();
+            $(`#channel-${channelName} .users`).show();
+        }
+
+        const users = [];
 
         if (!channels[channel].chatters) {
             return;
@@ -189,14 +200,66 @@ class Index {
 
         Object.keys(channels[channel].chatters.chatters).forEach((key) => {
             channels[channel].chatters.chatters[key].forEach((user) => {
-                users.push(user);
+                if (channels[channel].userBadges[user]) {
+                    users.push(user);
+                }
             });
+        });
+
+        users.sort((a, b) => {
+            // Channel owner.
+            if (channel === `#${a}` && !(channel === `#${b}`)) {
+                return -1;
+            }
+
+            if (!(channel === `#${a}`) && channel === `#${b}`) {
+                return 1;
+            }
+
+            // Moderators.
+            if (channels[channel].userBadges[a].includes("moderator") && !channels[channel].userBadges[b].includes("moderator")) {
+                return -1;
+            }
+
+            if (!channels[channel].userBadges[a].includes("moderator") && channels[channel].userBadges[b].includes("moderator")) {
+                return 1;
+            }
+
+            // Admin.
+            if (channels[channel].userBadges[a].includes("admin") && !channels[channel].userBadges[b].includes("admin")) {
+                return -1;
+            }
+
+            if (!channels[channel].userBadges[a].includes("admin") && channels[channel].userBadges[b].includes("admin")) {
+                return 1;
+            }
+
+            // Global moderators.
+            if (channels[channel].userBadges[a].includes("global_mod") && !channels[channel].userBadges[b].includes("global_mod")) {
+                return -1;
+            }
+
+            if (!channels[channel].userBadges[a].includes("global_mod") && channels[channel].userBadges[b].includes("global_mod")) {
+                return 1;
+            }
+
+            // Subscribers.
+            if (channels[channel].userBadges[a].includes("subscriber") && !channels[channel].userBadges[b].includes("subscriber")) {
+                return -1;
+            }
+
+            if (!channels[channel].userBadges[a].includes("subscriber") && channels[channel].userBadges[b].includes("subscriber")) {
+                return 1;
+            }
+
+            // Sort everyone else alphabetically.
+            return a.localeCompare(b);
         });
 
         $(`#channel-${channelName} .users`).html(
             users.map((username) => {
-                return `${channels[channel].userBadges[username] || ""}${username}`;
-            }).join("<br />")
+                return `<div class="user">${channels[channel].userBadgesHtml[username] || ""}${username}</div>`;
+            }).join("")
         );
     }
 
@@ -281,7 +344,6 @@ if (!win.data) {
 win.data.userSettings = new File(path.join(app.getPath("userData"), "userSettings.js")),
 win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.js")),
 
-// TODO: Figure out how to do timeouts, bans, purges
 //       ##     #                 #                        #    # #                                               # #   #
 //        #                       #                       #     # #                                               # #    #
 //  ##    #    ##     ##   ###   ###          ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #
@@ -309,7 +371,9 @@ client.on("message", (channel, username, usercolor, displayname, badges, html, t
         }
     }
 
-    if (badges) {
+    if (channels[channel].badges && badges) {
+        const oldBadges = channels[channel].userBadges[username] ? channels[channel].userBadges[username].join("") : "";
+
         Object.keys(badges).forEach((key) => {
             const {[key]: version} = badges,
                 badge = channels[channel].badges[key].versions[version];
@@ -320,7 +384,16 @@ client.on("message", (channel, username, usercolor, displayname, badges, html, t
             }).addClass("twitch-badge")[0].outerHTML;
         });
 
-        channels[channel].userBadges[username] = badgeHtml;
+        channels[channel].userBadges[username] = Object.keys(badges);
+        channels[channel].userBadgesHtml[username] = badgeHtml;
+
+        const newBadges = channels[channel].userBadges[username].join("");
+
+        if (oldBadges !== newBadges) {
+            Index.displayUsers(channel);
+        }
+    } else {
+        channels[channel].userBadges[username] = [];
     }
 
     if ($("<div></div>").append(html).text().indexOf(win.data.userSettings.data.twitch.username) === -1) {
@@ -328,8 +401,6 @@ client.on("message", (channel, username, usercolor, displayname, badges, html, t
     } else {
         Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="user-${username}">${Index.timestamp()}${badgeHtml}<b style="color: ${usercolor}">${Index.userLink(channel, username, displayname)}</b>: <span class="highlight">${html}</span></span>`);
     }
-
-    Index.displayUsers(channel);
 });
 
 //       ##     #                 #                        #    # #    #          #           # #   #
@@ -345,7 +416,8 @@ client.on("join", (channel, username, self) => {
         channels[channel] = {
             interval: setInterval(() => Index.updateStream(channel), 60000),
             isAtBottom: true,
-            userBadges: {}
+            userBadges: {},
+            userBadgesHtml: {}
         };
         $("#channels").append(Index.getTab(channelName));
         $("#display").append(Index.getPanel(channelName));
@@ -354,6 +426,7 @@ client.on("join", (channel, username, self) => {
         }
         Index.updateStream(channel);
     }
+    channels[channel].userBadges[username] = [];
     Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="join">${Index.timestamp()}${(self ? "You have" : `${Index.userLink(channel, username)} has`)} joined ${channel}</span>`);
     Index.displayUsers(channel);
 });
@@ -594,7 +667,7 @@ $(document).ready(() => {
 
         channels[`#${currentChannelName}`].isAtBottom = Index.isAtBottom($channel);
 
-        $(ev.target).tab("show").on("shown.bs.tab", () => {
+        $(ev.target).one("shown.bs.tab", () => {
             currentChannelName = $("#channels li.active").text().substring(1);
             $channel = $(`#channel-${currentChannelName} .text`);
 
@@ -602,6 +675,8 @@ $(document).ready(() => {
                 $channel.scrollTop($channel.prop("scrollHeight"));
             }
         });
+
+        $(ev.target).tab("show");
 
         $(ev.target).removeClass("text-danger");
     });
@@ -706,6 +781,11 @@ $(document).ready(() => {
                 profileWin = null;
             });
         }
+    });
+
+    $("#display").on("click", "a.external-link", (ev) => {
+        electron.shell.openExternal($(ev.target).attr("href"));
+        return false;
     });
 
     // #            #     #                               #   #     #          #                             ##                                  ##     #          #

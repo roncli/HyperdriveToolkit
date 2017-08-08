@@ -123,6 +123,10 @@ body {
     padding-right: 2px;
 }
 
+#display > .tab-pane > .users .user {
+    white-space: nowrap;
+}
+
 #input {
 
 }

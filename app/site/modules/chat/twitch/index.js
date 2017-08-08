@@ -4,6 +4,7 @@ const http = require("http"),
     TwitchApi = require("twitch-api"),
     Chat = require("../../../js/base/chat"),
     rangeRegex = /^([0-9]+)-([0-9]+)$/,
+    urlRegex = /\b((?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?)\b/ig,
     defaultColors = ["Blue", "Coral", "DodgerBlue", "SpringGreen", "YellowGreen", "Green", "OrangeRed", "Red", "GoldenRod", "HotPink", "CadetBlue", "SeaGreen", "Chocolate", "BlueViolet", "Firebrick"];
 
 require("../../../js/extensions");
@@ -145,7 +146,13 @@ class Twitch extends Chat {
                         var emote = emotes[start];
 
                         if (start > lastEnd) {
-                            span.append($("<span></span>").text(text.substring(lastEnd, start)).html());
+                            const fragment = text.substring(lastEnd, start),
+                                subspan = $("<span></span>");
+
+                            subspan.text(fragment);
+                            subspan.html(subspan.text().replace(urlRegex, (match, capture) => $("<div></div>").append($("<a></a>").attr({href: capture}).addClass("external-link").text(capture)).html()));
+
+                            span.append(subspan.html());
                         }
 
                         span.append($("<img></img>").attr({
@@ -157,10 +164,17 @@ class Twitch extends Chat {
                     });
 
                     if (lastEnd < text.length) {
-                        span.append($("<span></span>").text(text.substring(lastEnd)).html());
+                        const fragment = text.substring(lastEnd),
+                            subspan = $("<span></span>");
+                        
+                        subspan.text(fragment);
+                        subspan.html(subspan.text().replace(urlRegex, (match, capture) => $("<div></div>").append($("<a></a>").attr({href: capture}).addClass("external-link").text(capture)).html()));
+
+                        span.append(subspan.html());
                     }
                 } else {
                     span.text(text);
+                    span.html(span.text().replace(urlRegex, (match, capture) => $("<div></div>").append($("<a></a>").attr({href: capture}).addClass("external-link").text(capture)).html()));
                 }
 
                 if (!userstate.color) {
