@@ -820,7 +820,15 @@ $(document).ready(() => {
                 client.setStatus(channel, {status: title, game}).then((channelData) => {
                     channels[channelName].channel = channelData;
                     Index.updateTitle(channelName);
-                }).catch(console.log);
+
+                    if (editChannelWin) {
+                        editChannelWin.emit("editchannel-ok");
+                    }
+                }).catch((err) => {
+                    if (editChannelWin) {
+                        editChannelWin.emit("editchannel-invalidchannel");
+                    }
+                });
             });
 
             editChannelWin.on("closed", () => {

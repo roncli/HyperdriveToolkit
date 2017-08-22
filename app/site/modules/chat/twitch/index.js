@@ -181,7 +181,17 @@ class Twitch extends Chat {
                     userstate.color = defaultColors[(userstate.username.charCodeAt(0) + userstate.username.charCodeAt(userstate.username.length - 1)) % defaultColors.length];
                 }
 
-                twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
+                switch (userstate["message-type"]) {
+                    case "chat":
+                        twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
+                        break;
+                    case "whisper":
+                        twitch.emit("whisper", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
+                        break;
+                    default:
+                        console.log("WARNING: Missing message-type", channel, userstate, text, self);
+                        break;
+                }
             });
 
             twitch.tmi.on("join", (channel, username, self) => {
@@ -572,6 +582,11 @@ class Twitch extends Chat {
 
         return new Promise((resolve, reject) => {
             twitch.api.updateChannel(channel, twitch.accessToken, {channel: status}, (err, channel) => {
+                if (typeof channel === "string") {
+                    reject("Invalid channel.");
+                    return;
+                }
+
                 if (err) {
                     reject(err);
                     return;
