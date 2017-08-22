@@ -7,10 +7,10 @@ const path = require("path"),
     File = require("./modules/datastore/file"),
     settings = require("./js/apiSettings"),
     client = new Twitch(settings),
-    Utilities = require("./js/utilities");
+    Utilities = require("./js/utilities"),
+    channels = {};
 
-var channels = {},
-    profileWin, editChannelWin;
+let profileWin, editChannelWin;
 
 class Index {
     //              #    ###                     ##
@@ -50,9 +50,42 @@ class Index {
     // #      ##     ##   #    ###   #  #   ##    ##   ###   #  #   ##    ##
     //  ###
     static getTimeSince(time) {
-        var diff = new Date().getTime() - new Date(time).getTime();
+        const diff = new Date().getTime() - new Date(time).getTime();
 
-        return `${Math.floor(diff / 3600000)}:${("0" + Math.floor(diff % 3600000 / 60000)).slice(-2)}`;
+        return `${Math.floor(diff / 3600000)}:${(`0${Math.floor(diff % 3600000 / 60000)}`).slice(-2)}`;
+    }
+
+    //              #    ###                      #     #
+    //              #    #  #                     #
+    //  ###   ##   ###   #  #  #  #  ###    ###  ###   ##     ##   ###
+    // #  #  # ##   #    #  #  #  #  #  #  #  #   #     #    #  #  #  #
+    //  ##   ##     #    #  #  #  #  #     # ##   #     #    #  #  #  #
+    // #      ##     ##  ###    ###  #      # #    ##  ###    ##   #  #
+    //  ###
+    static getDuration(time) {
+        let str = "";
+
+        if (time <= 0) {
+            return "0 seconds";
+        }
+
+        const seconds = time % 60,
+            minutes = Math.floor(time / 60) % 60,
+            hours = Math.floor(time / 3600);
+
+        if (seconds > 0) {
+            str = `${seconds} second${seconds === 1 ? "" : "s"}`;
+        }
+
+        if (minutes > 0) {
+            str = `${minutes}minute${minutes === 1 ? "" : "s"} ${str}`;
+        }
+
+        if (hours > 0) {
+            str = `${hours}hour${hours === 1 ? "" : "s"} ${str}`;
+        }
+
+        return str;
     }
 
     // #      #          ##    ####                       #
@@ -106,7 +139,7 @@ class Index {
     //   ##  ###   #  #   ##   ###      ##   # #  #  #  ###
     //                                                  #
     static timestamp() {
-        var date = new Date();
+        const date = new Date();
         return `${win.data.appSettings.data.chat.timestamps ? `[${`0${date.getHours()}`.substr(-2)}:${`0${date.getMinutes()}`.substr(-2)}:${`0${date.getSeconds()}`.substr(-2)}` : ""}] `;
     }
 
@@ -123,7 +156,7 @@ class Index {
      * @return {void}
      */
     static updateStream(channel) {
-        var channelName = channel.substring(1);
+        const channelName = channel.substring(1);
 
         if (!channels[channel]) {
             return;
@@ -163,7 +196,7 @@ class Index {
     //  #     #      ##    #    #  #    ##   ##    #       ##
     // ###   ###   ###      ##   ##   ###     ##   #     ###
     static listUsers(channel) {
-        var channelName = channel.substring(1);
+        const channelName = channel.substring(1);
 
         client.getChatters(channelName).then((chatters) => {
             channels[channel].chatters = chatters;
@@ -271,10 +304,9 @@ class Index {
     //  ###  ###    ###   # #    ##   ##    #    ###     ##  ###    ##
     //       #
     static updateTitle(channel) {
-        var channelName = channel.substring(1);
+        const channelName = channel.substring(1);
 
-        $(`#channel-${channelName} .topic`).html(
-`<div style="position: relative;">
+        $(`#channel-${channelName} .topic`).html(`<div style="position: relative;">
     ${channels[channel].channel && channels[channel].channel.profile_banner ? `<div class="topic-background" style="background-image: url('${channels[channel].channel.profile_banner}');"></div>` : ""}
     <div class="topic-foreground">
         ${channels[channel].channel && channels[channel].channel.logo ? `<img src="${channels[channel].channel.logo}" class="topic-logo">` : ""}
@@ -282,7 +314,7 @@ class Index {
             <button class="btn btn-sm btn-default editchannel"><span class="glyphicon glyphicon-edit"></span></button>
         </div>
         ${channels[channel].channel ? `<div class="topic-text">
-            ${channel}${channels[channel].channel.status ? ` - ` : ""}${this.htmlEncode(channels[channel].channel.status)} ${channels[channel].channel.game ? `(${this.htmlEncode(channels[channel].channel.game)})` : ""}<br />
+            ${channel}${channels[channel].channel.status ? " - " : ""}${this.htmlEncode(channels[channel].channel.status)} ${channels[channel].channel.game ? `(${this.htmlEncode(channels[channel].channel.game)})` : ""}<br />
             ${channels[channel].stream ? `Online: ${this.getTimeSince(channels[channel].stream.created_at)} - Viewers: ${channels[channel].stream.viewers} - ` : ""}${channels[channel].chatters ? `Chatters: ${channels[channel].chatters.chatter_count} - ` : ""}Followers: ${channels[channel].channel.followers} - Views: ${channels[channel].channel.views}
         </div>` : ""}
     </div>
@@ -335,14 +367,15 @@ class Index {
         if (thisChannelName !== activeChannelName) {
             $(`#tab-${thisChannelName}`).find("a").addClass("text-danger");
         }
-   }
+    }
 }
 
 if (!win.data) {
     win.data = {};
 }
-win.data.userSettings = new File(path.join(app.getPath("userData"), "userSettings.js")),
-win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.js")),
+
+win.data.userSettings = new File(path.join(app.getPath("userData"), "userSettings.js"));
+win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.js"));
 
 //       ##     #                 #                        #    # #                                               # #   #
 //        #                       #                       #     # #                                               # #    #
@@ -352,12 +385,12 @@ win.data.appSettings = new File(path.join(app.getPath("userData"), "appSettings.
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #
 //                                                                                                    ###
 client.on("message", (channel, username, usercolor, displayname, badges, html, text) => {
-    var color = tinycolor(usercolor),
+    const color = tinycolor(usercolor),
         background = tinycolor(win.data.appSettings.data.chat.colors.chat.background),
         brightness = background.getBrightness(),
         difference = brightness - color.getBrightness(),
-        channelName = channel.substring(1),
-        badgeHtml = "";
+        channelName = channel.substring(1);
+    let badgeHtml = "";
 
     if (difference > 0 && difference < 50) {
         usercolor = color.darken(50);
@@ -411,7 +444,7 @@ client.on("message", (channel, username, usercolor, displayname, badges, html, t
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         # #    ##   ###   #  #         #
 //                                                                    #
 client.on("join", (channel, username, self) => {
-    var channelName = channel.substring(1);
+    const channelName = channel.substring(1);
     if (self) {
         channels[channel] = {
             interval: setInterval(() => Index.updateStream(channel), 60000),
@@ -439,13 +472,17 @@ client.on("join", (channel, username, self) => {
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###    # #  #       ##         #
 //                                                                   #
 client.on("part", (channel, username, self) => {
-    var channelName = channel.substring(1);
+    const channelName = channel.substring(1);
+
     if (self) {
-        let index = $(`#tab-${channelName}`).index();
+        const index = $(`#tab-${channelName}`).index();
+
         $(`#tab-${channelName}`).remove();
         $(`#channel-${channelName}`).remove();
-        clearInterval(channels[channel].interval);
-        delete channels[channel];
+        if (channels[channel]) {
+            clearInterval(channels[channel].interval);
+            delete channels[channel];
+        }
         if ($(".channel-tab.active").length === 0) {
             $(`.channel-tab:nth-child(${index === Object.keys(channels).length ? index : index + 1}) > a`).tab("show");
         }
@@ -462,7 +499,7 @@ client.on("part", (channel, username, self) => {
 // #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #          #
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##    ###         #
 client.on("mod", (channel, username) => {
-    var channelName = channel.substring(1);
+    const channelName = channel.substring(1);
     Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}${Index.userLink(channel, username)} is now a moderator of ${channel}</span>`);
 });
 
@@ -473,8 +510,174 @@ client.on("mod", (channel, username) => {
 // #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #  #  #  #  #          #
 //  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ###  #  #  #  #   ##    ###         #
 client.on("unmod", (channel, username) => {
-    var channelName = channel.substring(1);
+    const channelName = channel.substring(1);
     Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}${Index.userLink(channel, username)} is no longer a moderator of ${channel}</span>`);
+});
+
+//       ##     #                 #                        #    # #  #                  # #   #
+//        #                       #                       #     # #  #                  # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ###  ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  # ##  #  #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###    # #  #  #         #
+client.on("ban", (channel, username, reason) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}${Index.userLink(channel, username)} has been banned from chat: ${reason}</span>`);
+});
+
+//       ##     #                 #                        #    # #        #                        # #   #
+//        #                       #                       #     # #        #                        # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ##   ###    ##    ##   ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #     #  #  # ##  # ##  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #     #  #  ##    ##    #             #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ##   #  #   ##    ##   #            #
+client.on("cheer", (channel, userstate, message) => {
+
+});
+
+//       ##     #                 #                        #    # #        ##                            #            #     # #   #
+//        #                       #                       #     # #         #                            #            #     # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ##    #     ##    ###  ###    ##   ###    ###  ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #      #    # ##  #  #  #  #  #     #  #  #  #   #            #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #      #    ##    # ##  #     #     #  #  # ##   #            #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ##   ###    ##    # #  #      ##   #  #   # #    ##         #
+client.on("clearchat", (channel) => {
+    const channelName = channel.substring(1);
+    $(`#channel-${channelName} .text`).empty();
+});
+
+//       ##     #                 #                        #    # #                     #                      ##           # #   #
+//        #                       #                       #     # #                     #                       #           # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ##   # #    ##   ###    ##    ##   ###    #    #  #   # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          # ##  ####  #  #   #    # ##  #  #  #  #   #    #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          ##    #  #  #  #   #    ##    #  #  #  #   #     # #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ##   #  #   ##     ##   ##    ##   #  #  ###     #          #
+//                                                                                                                    #
+client.on("emoteonly", (channel, enabled) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}Emote only chat mode has been ${enabled ? "enabled" : "disabled"}.</span>`);
+});
+
+//       ##     #                 #                        #    # #    #         ##    ##                                               ##           # #   #
+//        #                       #                       #     # #   # #         #     #                                                #           # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   #     ##    #     #     ##   #  #   ##   ###    ###    ##   ###    #    #  #   # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ###   #  #   #     #    #  #  #  #  # ##  #  #  ##     #  #  #  #   #    #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #           #    #  #   #     #    #  #  ####  ##    #       ##   #  #  #  #   #     # #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          #     ##   ###   ###    ##   ####   ##   #     ###     ##   #  #  ###     #          #
+//                                                                                                                                             #
+client.on("followersonly", (channel, enabled, length) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}Followers only chat mode has been ${enabled ? "enabled" : "disabled"}.</span>`);
+});
+
+//       ##     #                 #                        #    # #  #                   #             #   # #   #
+//        #                       #                       #     # #  #                   #             #   # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ##    ###   ###    ##    ###   # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  ##      #    # ##  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #    ##    #    ##    #  #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###      ##   ##    ###         #
+client.on("hosted", (channel, username, viewers, autohost) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}${username} has ${autohost ? "autohosted" : "hosted"} this channel${viewers && viewers > 0 ? ` with ${viewers} viewers` : ""}.</span>`);
+});
+
+//       ##     #                 #                        #    # #  #                   #     #                 # #   #
+//        #                       #                       #     # #  #                   #                       # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ##    ###   ###   ##    ###    ###   # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  ##      #     #    #  #  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #    ##    #     #    #  #   ##           #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #  #   ##   ###      ##  ###   #  #  #            #
+//                                                                                                         ###
+client.on("hosting", (channel, target, viewers) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}This channel is now hosting ${target}.</span>`);
+});
+
+//       ##     #                 #                        #    # #         ##   #     #            #           # #   #
+//        #                       #                       #     # #        #  #  #     #            #           # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###   #  #  # #   ###    ##   ###    ###   # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #   ###  ##    #  #  # ##   #    #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #        #  # #   #  #  ##     #    # ##          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #      ##   #  #  ###    ##     ##   # #         #
+client.on("r9kbeta", (channel, enabled) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}R9K chat mode has been ${enabled ? "enabled" : "disabled"}.</span>`);
+});
+
+//       ##     #                 #                        #    # #                           #      # #   #
+//        #                       #                       #     # #                           #      # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ##    ###   #  #  ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  # ##  ##     #  #  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #     ##      ##   #  #  #  #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #      ##   ###     ###  ###          #
+client.on("resub", (channel, username, months, message, userstate, methods) => {
+
+});
+
+//       ##     #                 #                        #    # #                                  #           #           # #   #
+//        #                       #                       #     # #                                  #           #           # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###    ##    ##   # #    ###   ###    ###  ###    ##    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  #  #  ####  ##      #    #  #   #    # ##          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #     #  #  #  #  #  #    ##    #    # ##   #    ##            #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         #      ##    ##   #  #  ###      ##   # #    ##   ##          #
+// client.on("roomstate", (channel, state) => {
+// TODO: Pending check to see if existing events are enough.
+// });
+
+//       ##     #                 #                        #    # #         ##                               #         # #   #
+//        #                       #                       #     # #          #                               #         # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ###    #     ##   #  #  # #    ##    ###   ##    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ##      #    #  #  #  #  ####  #  #  #  #  # ##          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #            ##    #    #  #  ####  #  #  #  #  #  #  ##            #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###    ###    ##   ####  #  #   ##    ###   ##          #
+client.on("slowmode", (channel, enabled, length) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}Slow chat mode has been ${enabled ? "enabled" : "disabled"}.</span>`);
+});
+
+//       ##     #                 #                        #    # #               #                         #    #                         # #   #
+//        #                       #                       #     # #               #                              #                         # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ###   #  #  ###    ###    ##   ###   ##    ###    ##   ###    ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ##     #  #  #  #  ##     #     #  #   #    #  #  # ##  #  #  ##             #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #            ##   #  #  #  #    ##   #     #      #    #  #  ##    #       ##           #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###     ###  ###   ###     ##   #     ###   ###    ##   #     ###           #
+client.on("subscribers", (channel, enabled) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}Subscribers only chat mode has been ${enabled ? "enabled" : "disabled"}.</span>`);
+});
+
+//       ##     #                 #                        #    # #               #                         #           #     #                 # #   #
+//        #                       #                       #     # #               #                                     #                       # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #   ###   #  #  ###    ###    ##   ###   ##    ###   ###   ##     ##   ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          ##     #  #  #  #  ##     #     #  #   #    #  #   #     #    #  #  #  #          #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #            ##   #  #  #  #    ##   #     #      #    #  #   #     #    #  #  #  #          #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #         ###     ###  ###   ###     ##   #     ###   ###     ##  ###    ##   #  #         #
+//                                                                                                               #
+client.on("subscription", (channel, username, method, message, userstate) => {
+
+});
+
+//       ##     #                 #                        #    # #   #     #                             #     # #   #
+//        #                       #                       #     # #   #                                   #     # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  ###   ##    # #    ##    ##   #  #  ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #           #     #    ####  # ##  #  #  #  #   #            #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #           #     #    #  #  ##    #  #  #  #   #            #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #           ##  ###   #  #   ##    ##    ###    ##         #
+client.on("timeout", (channel, username, reason, duration) => {
+    const channelName = channel.substring(1);
+    $(`#channel-${channelName} .text .user-${username}`).addClass("timeout");
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}${username} has been timed out for ${Index.getDuration(duration)}.</span>`);
+});
+
+//       ##     #                 #                        #    # #              #                   #     # #   #
+//        #                       #                       #     # #              #                   #     # #    #
+//  ##    #    ##     ##   ###   ###          ##   ###    #     # #  #  #  ###   ###    ##    ###   ###    # #    #
+// #      #     #    # ##  #  #   #          #  #  #  #   #          #  #  #  #  #  #  #  #  ##      #            #
+// #      #     #    ##    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #  #  #    ##    #            #
+//  ##   ###   ###    ##   #  #    ##   ##    ##   #  #    #          ###  #  #  #  #   ##   ###      ##         #
+client.on("unhost", (channel, viewers) => {
+    const channelName = channel.substring(1);
+    Index.appendToChannel($(`#channel-${channelName} .text`), `<span class="info">${Index.timestamp()}Hosting mode ended.</span>`);
 });
 
 //       ##     #                 #                        #    # #                       #               #     #          ##            # #   #

@@ -57,6 +57,10 @@ body {
     display: block;
 }
 
+#display > .tab-pane > .chat > .text .timeout {
+    text-decoration: line-through;
+}
+
 #display > .tab-pane > .chat > .topic {
     height: 48px;
     flex-shrink: 0;

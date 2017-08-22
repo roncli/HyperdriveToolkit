@@ -19,8 +19,8 @@ require("../../../js/extensions");
 TwitchApi.prototype.getEmoticonImages = function(callback) {
     this._executeRequest(
         {
-            method: 'GET',
-            path: '/chat/emoticon_images',
+            method: "GET",
+            path: "/chat/emoticon_images"
         },
         callback
     );
@@ -77,25 +77,24 @@ class Twitch extends Chat {
     //  ##    ##   #  #  #  #   ##    ##     ##
     /**
      * Connects to Twitch chat.
+     * @return {Promise} A promise that resolves when Twitch chat is connected.
      */
     connect() {
-        var twitch = this;
+        const twitch = this;
 
         return new Promise((resolve, reject) => {
-            var settings;
-
             if (twitch.tmi) {
                 // TODO: Refine this.
-                reject("You are already connected.");
+                reject(new Error("You are already connected."));
                 return;
             }
 
             if (!twitch.authorized) {
-                reject("You must authorize your Twitch account before connecting.");
+                reject(new Error("You must authorize your Twitch account before connecting."));
                 return;
             }
 
-            settings = twitch.settings.tmi;
+            const {settings: {tmi: settings}} = twitch;
             settings.identity = {
                 username: twitch.username,
                 password: `oauth:${twitch.accessToken}`
@@ -128,14 +127,15 @@ class Twitch extends Chat {
             //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #
             //                                                                                                                            ###
             twitch.tmi.on("message", (channel, userstate, text, self) => {
-                var span = $("<span></span>");
+                const span = $("<span></span>");
 
                 if (userstate.emotes) {
-                    let emotes = {},
-                        lastEnd = 0;
+                    const emotes = {};
+                    let lastEnd = 0;
 
-                        Object.keys(userstate.emotes).forEach((id) => {
-                        var ranges = userstate.emotes[id];
+                    Object.keys(userstate.emotes).forEach((id) => {
+                        const {emotes: {[id]: ranges}} = userstate;
+
                         ranges.forEach((range) => {
                             var matches = rangeRegex.exec(range);
                             emotes[+matches[1]] = {start: +matches[1], end: +matches[2], id: id};
@@ -166,7 +166,7 @@ class Twitch extends Chat {
                     if (lastEnd < text.length) {
                         const fragment = text.substring(lastEnd),
                             subspan = $("<span></span>");
-                        
+
                         subspan.text(fragment);
                         subspan.html(subspan.text().replace(urlRegex, (match, capture) => $("<div></div>").append($("<a></a>").attr({href: capture}).addClass("external-link").text(capture)).html()));
 
@@ -194,22 +194,208 @@ class Twitch extends Chat {
                 }
             });
 
+            //  #           #     #          #            #           #                        #    # #    #          #           # #   #
+            //  #                 #          #            #                                   #     # #                           # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #    #    ##   ##    ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #            #   #  #   #    #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #            #   #  #   #    #  #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         # #    ##   ###   #  #         #
+            //                                                                                            #
             twitch.tmi.on("join", (channel, username, self) => {
                 twitch.emit("join", channel, username, self);
             });
 
+            //  #           #     #          #            #           #                        #    # #                     #     # #   #
+            //  #                 #          #            #                                   #     # #                     #     # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###    ###  ###   ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  #  #  #  #   #            #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  # ##  #      #            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         ###    # #  #       ##         #
+            //                                                                                           #
             twitch.tmi.on("part", (channel, username, self) => {
                 twitch.emit("part", channel, username, self);
             });
 
+            //  #           #     #          #            #           #                        #    # #                 #   # #   #
+            //  #                 #          #            #                                   #     # #                 #   # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  # #    ##    ###   # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ####  #  #  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #  #   ##    ###         #
             twitch.tmi.on("mod", (channel, username) => {
                 twitch.emit("mod", channel, username);
             });
 
+            //  #           #     #          #            #           #                        #    # #                             #   # #   #
+            //  #                 #          #            #                                   #     # #                             #   # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  #  #  ###   # #    ##    ###   # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  #  #  ####  #  #  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #  #  #  #  #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #          ###  #  #  #  #   ##    ###         #
             twitch.tmi.on("unmod", (channel, username) => {
                 twitch.emit("unmod", channel, username);
             });
 
+            //  #           #     #          #            #           #                        #    # #  #                  # #   #
+            //  #                 #          #            #                                   #     # #  #                  # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###    ###  ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  #  #  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  # ##  #  #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         ###    # #  #  #         #
+            twitch.tmi.on("ban", (channel, username, reason) => {
+                twitch.emit("ban", channel, username, reason);
+            });
+
+            //  #           #     #          #            #           #                        #    # #        #                        # #   #
+            //  #                 #          #            #                                   #     # #        #                        # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #   ##   ###    ##    ##   ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #     #  #  # ##  # ##  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #     #  #  ##    ##    #             #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #          ##   #  #   ##    ##   #            #
+            twitch.tmi.on("cheer", (channel, userstate, message) => {
+                twitch.emit("cheer", channel, userstate, message);
+            });
+
+            //  #           #     #          #            #           #                        #    # #        ##                            #            #     # #   #
+            //  #                 #          #            #                                   #     # #         #                            #            #     # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #   ##    #     ##    ###  ###    ##   ###    ###  ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #      #    # ##  #  #  #  #  #     #  #  #  #   #            #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #      #    ##    # ##  #     #     #  #  # ##   #            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #          ##   ###    ##    # #  #      ##   #  #   # #    ##         #
+            twitch.tmi.on("clearchat", (channel) => {
+                twitch.emit("clearchat", channel);
+            });
+
+            //  #           #     #          #            #           #                        #    # #                     #                      ##           # #   #
+            //  #                 #          #            #                                   #     # #                     #                       #           # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #   ##   # #    ##   ###    ##    ##   ###    #    #  #   # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          # ##  ####  #  #   #    # ##  #  #  #  #   #    #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          ##    #  #  #  #   #    ##    #  #  #  #   #     # #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #          ##   #  #   ##     ##   ##    ##   #  #  ###     #          #
+            //                                                                                                                                            #
+            twitch.tmi.on("emoteonly", (channel, enabled) => {
+                twitch.emit("emoteonly", channel, enabled);
+            });
+
+            //  #           #     #          #            #           #                        #    # #    #         ##    ##                                               ##           # #   #
+            //  #                 #          #            #                                   #     # #   # #         #     #                                                #           # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #   #     ##    #     #     ##   #  #   ##   ###    ###    ##   ###    #    #  #   # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ###   #  #   #     #    #  #  #  #  # ##  #  #  ##     #  #  #  #   #    #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #           #    #  #   #     #    #  #  ####  ##    #       ##   #  #  #  #   #     # #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #          #     ##   ###   ###    ##   ####   ##   #     ###     ##   #  #  ###     #          #
+            //                                                                                                                                                                     #
+            twitch.tmi.on("followersonly", (channel, enabled, length) => {
+                twitch.emit("followersonly", channel, enabled, length);
+            });
+
+            //  #           #     #          #            #           #                        #    # #  #                   #             #   # #   #
+            //  #                 #          #            #                                   #     # #  #                   #             #   # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###    ##    ###   ###    ##    ###   # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  #  #  ##      #    # ##  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  #  #    ##    #    ##    #  #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #  #   ##   ###      ##   ##    ###         #
+            twitch.tmi.on("hosted", (channel, username, viewers, autohost) => {
+                twitch.emit("hosted", channel, username, viewers, autohost);
+            });
+
+            //  #           #     #          #            #           #                        #    # #  #                   #     #                 # #   #
+            //  #                 #          #            #                                   #     # #  #                   #                       # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###    ##    ###   ###   ##    ###    ###   # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  #  #  ##      #     #    #  #  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  #  #    ##    #     #    #  #   ##           #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #  #   ##   ###      ##  ###   #  #  #            #
+            //                                                                                                                                 ###
+            twitch.tmi.on("hosting", (channel, target, viewers) => {
+                twitch.emit("hosting", channel, target, viewers);
+            });
+
+            //  #           #     #          #            #           #                        #    # #         ##   #     #            #           # #   #
+            //  #                 #          #            #                                   #     # #        #  #  #     #            #           # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###   #  #  # #   ###    ##   ###    ###   # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #   ###  ##    #  #  # ##   #    #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #        #  # #   #  #  ##     #    # ##          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #      ##   #  #  ###    ##     ##   # #         #
+            twitch.tmi.on("r9kbeta", (channel, enabled) => {
+                twitch.emit("r9kbeta", channel, enabled);
+            });
+
+            //  #           #     #          #            #           #                        #    # #                           #      # #   #
+            //  #                 #          #            #                                   #     # #                           #      # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###    ##    ###   #  #  ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  # ##  ##     #  #  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #     ##      ##   #  #  #  #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #      ##   ###     ###  ###          #
+            twitch.tmi.on("resub", (channel, username, months, message, userstate, methods) => {
+                twitch.emit("resub", channel, username, months, message, userstate, methods);
+            });
+
+            //  #           #     #          #            #           #                        #    # #                                  #           #           # #   #
+            //  #                 #          #            #                                   #     # #                                  #           #           # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###    ##    ##   # #    ###   ###    ###  ###    ##    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  #  #  #  #  ####  ##      #    #  #   #    # ##          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #     #  #  #  #  #  #    ##    #    # ##   #    ##            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #      ##    ##   #  #  ###      ##   # #    ##   ##          #
+            twitch.tmi.on("roomstate", (channel, state) => {
+                twitch.emit("roomstate", channel, state);
+            });
+
+            //  #           #     #          #            #           #                        #    # #         ##                               #         # #   #
+            //  #                 #          #            #                                   #     # #          #                               #         # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #   ###    #     ##   #  #  # #    ##    ###   ##    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ##      #    #  #  #  #  ####  #  #  #  #  # ##          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #            ##    #    #  #  ####  #  #  #  #  #  #  ##            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         ###    ###    ##   ####  #  #   ##    ###   ##          #
+            twitch.tmi.on("slowmode", (channel, enabled, length) => {
+                twitch.emit("slowmode", channel, enabled, length);
+            });
+
+            //  #           #     #          #            #           #                        #    # #               #                         #    #                         # #   #
+            //  #                 #          #            #                                   #     # #               #                              #                         # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #   ###   #  #  ###    ###    ##   ###   ##    ###    ##   ###    ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ##     #  #  #  #  ##     #     #  #   #    #  #  # ##  #  #  ##             #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #            ##   #  #  #  #    ##   #     #      #    #  #  ##    #       ##           #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         ###     ###  ###   ###     ##   #     ###   ###    ##   #     ###           #
+            twitch.tmi.on("subscribers", (channel, enabled) => {
+                twitch.emit("subscribers", channel, enabled);
+            });
+
+            //  #           #     #          #            #           #                        #    # #               #                         #           #     #                 # #   #
+            //  #                 #          #            #                                   #     # #               #                                     #                       # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #   ###   #  #  ###    ###    ##   ###   ##    ###   ###   ##     ##   ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ##     #  #  #  #  ##     #     #  #   #    #  #   #     #    #  #  #  #          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #            ##   #  #  #  #    ##   #     #      #    #  #   #     #    #  #  #  #          #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         ###     ###  ###   ###     ##   #     ###   ###     ##  ###    ##   #  #         #
+            //                                                                                                                                       #
+            twitch.tmi.on("subscription", (channel, username, method, message, userstate) => {
+                twitch.emit("subscription", channel, username, method, message, userstate);
+            });
+
+            //  #           #     #          #            #           #                        #    # #   #     #                             #     # #   #
+            //  #                 #          #            #                                   #     # #   #                                   #     # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  ###   ##    # #    ##    ##   #  #  ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #           #     #    ####  # ##  #  #  #  #   #            #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #           #     #    #  #  ##    #  #  #  #   #            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #           ##  ###   #  #   ##    ##    ###    ##         #
+            twitch.tmi.on("timeout", (channel, username, reason, duration) => {
+                twitch.emit("timeout", channel, username, reason, duration);
+            });
+
+            //  #           #     #          #            #           #                        #    # #              #                   #     # #   #
+            //  #                 #          #            #                                   #     # #              #                   #     # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  #  #  ###   ###    ##    ###   ###    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #  #  #  #  #  #  #  #  ##      #            #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  #  #  #  #  #  #    ##    #            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #          ###  #  #  #  #   ##   ###      ##         #
+            twitch.tmi.on("unhost", (channel, viewers) => {
+                twitch.emit("unhost", channel, viewers);
+            });
+
+            //  #           #     #          #            #           #                                               #      #    #
+            //  #                 #          #            #                                                           #     #      #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##    ##   ###   ###    ##    ##   ###    #      #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #     #  #  #  #  #  #  # ##  #      #     #      #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #     #  #  #  #  #  #  ##    #      #     #      #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##    ##   #  #  #  #   ##    ##     ##    #    #
             twitch.tmi.connect().then(() => {
                 twitch.tmi.raw("CAP REQ :twitch.tv/membership twitch.tv/commands twitch.tv/tags");
 
@@ -250,7 +436,7 @@ class Twitch extends Chat {
         var twitch = this;
 
         return new Promise((resolve, reject) => {
-            var api = twitch.api;
+            const {api} = twitch;
 
             new Promise((innerResolve, innerReject) => {
                 if (username && accessToken) {
@@ -261,8 +447,7 @@ class Twitch extends Chat {
                         }
 
                         twitch.accessToken = accessToken;
-                        twitch.username = body.name;
-                        twitch.displayName = body.display_name;
+                        ({name: twitch.username, display_name: twitch.displayName} = body);
 
                         twitch.emit("credentials", twitch.username, twitch.accessToken);
 
@@ -581,9 +766,9 @@ class Twitch extends Chat {
         const twitch = this;
 
         return new Promise((resolve, reject) => {
-            twitch.api.updateChannel(channel, twitch.accessToken, {channel: status}, (err, channel) => {
-                if (typeof channel === "string") {
-                    reject("Invalid channel.");
+            twitch.api.updateChannel(channel, twitch.accessToken, {channel: status}, (err, channelObj) => {
+                if (typeof channelObj === "string") {
+                    reject(new Error("Invalid channel."));
                     return;
                 }
 
@@ -592,7 +777,7 @@ class Twitch extends Chat {
                     return;
                 }
 
-                resolve(channel);
+                resolve(channelObj);
             });
         });
     }
