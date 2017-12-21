@@ -592,7 +592,7 @@ class Twitch extends Chat {
         const twitch = this,
             {api} = this;
 
-        return api.getTwitchUserByName(username).then((data) => data.id).then((id) => api.sendApiRequest(`users/${twitch.id}/follows/channel/${id}`, {requestOptions: {json: {notifications: !!notifications}}, method: "put", api: "kraken"}));
+        return api.getTwitchUserByName(username).then((data) => data.id).then((id) => api.sendApiRequest(`users/${twitch.id}/follows/channel/${id}`, {requestOptions: {method: "PUT", json: {notifications: !!notifications}}, api: "kraken"}));
     }
 
     //               #         ##    ##
@@ -605,7 +605,7 @@ class Twitch extends Chat {
         const twitch = this,
             {api} = this;
 
-        return api.getTwitchUserByName(username).then((data) => data.id).then((id) => api.sendApiRequest(`users/${twitch.id}/follows/channel/${id}`, {method: "delete", api: "kraken"}));
+        return api.getTwitchUserByName(username).then((data) => data.id).then((id) => api.sendApiRequest(`users/${twitch.id}/follows/channel/${id}`, {requestOptions: {method: "DELETE"}, api: "kraken"}));
     }
 
     //              #     ##    #
@@ -761,7 +761,7 @@ class Twitch extends Chat {
     setStatus(channel, status) {
         const {api} = this;
 
-        return api.getTwitchUserByName(channel).then((data) => data.id).then((id) => api.sendApiRequest(`channels/${id}`, {requestOptions: {json: {channel: status}}, method: "put", api: "kraken"}));
+        return api.getTwitchUserByName(channel).then((data) => data.id).then((id) => api.sendApiRequest(`channels/${id}`, {requestOptions: {method: "PUT", json: {channel: status}}, api: "kraken"}));
     }
 }
 
