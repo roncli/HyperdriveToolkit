@@ -12,6 +12,16 @@ const path = require("path"),
 
 let profileWin, editChannelWin;
 
+//   ###              #
+//    #               #
+//    #    # ##    ## #   ###   #   #
+//    #    ##  #  #  ##  #   #   # #
+//    #    #   #  #   #  #####    #
+//    #    #   #  #  ##  #       # #
+//   ###   #   #   ## #   ###   #   #
+/**
+ * A class for the entry point into the application.
+ */
 class Index {
     //              #    ###                     ##
     //              #    #  #                     #
@@ -162,23 +172,24 @@ class Index {
             return;
         }
 
-        client.getStream(channelName).then((stream) => {
-            return new Promise((resolve, reject) => {
+        new Promise((resolve, reject) => {
+            client.getStream(channelName).then((stream) => {
                 if (stream) {
                     channels[channel].stream = stream;
-                    channels[channel].channel = stream.channel;
-                    Index.updateTitle(channel);
-                    resolve();
                 } else {
-                    delete channels[channel].stream;
-                    client.getChannel(channelName).then((channelData) => {
-                        channels[channel].channel = channelData;
-                        Index.updateTitle(channel);
-                        resolve();
-                    }).catch(reject);
+                    reject(new Error("Stream is offline."));
                 }
-            });
-        }).then(() => {
+
+                resolve();
+            }).catch(reject);
+        }).catch(() => {
+            delete channels[channel].stream;
+        }).then(() => new Promise((resolve, reject) => {
+            client.getChannel(channelName).then((channelData) => {
+                channels[channel].channel = channelData;
+                Index.updateTitle(channel);
+            }).catch(reject);
+        })).then(() => {
             if (!channels[channel].badges) {
                 client.getChannelBadges(channels[channel].channel._id).then((badges) => {
                     channels[channel].badges = badges;
@@ -315,7 +326,7 @@ class Index {
         </div>
         ${channels[channel].channel ? `<div class="topic-text">
             ${channel}${channels[channel].channel.status ? " - " : ""}${this.htmlEncode(channels[channel].channel.status)} ${channels[channel].channel.game ? `(${this.htmlEncode(channels[channel].channel.game)})` : ""}<br />
-            ${channels[channel].stream ? `Online: ${this.getTimeSince(channels[channel].stream.created_at)} - Viewers: ${channels[channel].stream.viewers} - ` : ""}${channels[channel].chatters ? `Chatters: ${channels[channel].chatters.chatter_count} - ` : ""}Followers: ${channels[channel].channel.followers} - Views: ${channels[channel].channel.views}
+            ${channels[channel].stream ? `Online: ${this.getTimeSince(channels[channel].stream.started_at)} - Viewers: ${channels[channel].stream.viewer_count} - ` : ""}${channels[channel].chatters ? `Chatters: ${channels[channel].chatters.chatter_count} - ` : ""}Followers: ${channels[channel].channel.followers} - Views: ${channels[channel].channel.views}
         </div>` : ""}
     </div>
 </div>`);
@@ -1021,13 +1032,13 @@ $(document).ready(() => {
 
             editChannelWin.on("updatechannel", (channel, title, game) => {
                 client.setStatus(channel, {status: title, game}).then((channelData) => {
-                    channels[channelName].channel = channelData;
+                    channels[channelName].channel = channelData.body;
                     Index.updateTitle(channelName);
 
                     if (editChannelWin) {
                         editChannelWin.emit("editchannel-ok");
                     }
-                }).catch((err) => {
+                }).catch(() => {
                     if (editChannelWin) {
                         editChannelWin.emit("editchannel-invalidchannel");
                     }

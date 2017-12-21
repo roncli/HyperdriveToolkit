@@ -9,7 +9,7 @@ module.exports = {
     },
     twitch: {
         clientId: "xetz9cvboym6sr1iz19qr0kubr2nl1",
-        clientSecret: undefined,
+        clientSecret: "-",
         redirectUri: "http://127.0.0.1:65100/token",
         scopes: [
             "channel_commercial",

@@ -1,30 +1,14 @@
 const http = require("http"),
     electron = require("electron"),
     Tmi = require("tmi.js"),
-    TwitchApi = require("twitch-api"),
+    TwitchHelix = require("twitch-helix"),
     Chat = require("../../../js/base/chat"),
     rangeRegex = /^([0-9]+)-([0-9]+)$/,
     urlRegex = /\b((?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?)\b/ig,
-    defaultColors = ["Blue", "Coral", "DodgerBlue", "SpringGreen", "YellowGreen", "Green", "OrangeRed", "Red", "GoldenRod", "HotPink", "CadetBlue", "SeaGreen", "Chocolate", "BlueViolet", "Firebrick"];
+    defaultColors = ["Blue", "Coral", "DodgerBlue", "SpringGreen", "YellowGreen", "Green", "OrangeRed", "Red", "GoldenRod", "HotPink", "CadetBlue", "SeaGreen", "Chocolate", "BlueViolet", "Firebrick"],
+    apiSettings = require("../../../js/apiSettings");
 
 require("../../../js/extensions");
-
-// ###          #     #          #      ##          #                       #    ####               #     #                      ###
-//  #                 #          #     #  #                                 #    #                  #                             #
-//  #    #  #  ##    ###    ##   ###   #  #  ###   ##           ###   ##   ###   ###   # #    ##   ###   ##     ##    ##   ###    #    # #    ###   ###   ##    ###
-//  #    #  #   #     #    #     #  #  ####  #  #   #          #  #  # ##   #    #     ####  #  #   #     #    #     #  #  #  #   #    ####  #  #  #  #  # ##  ##
-//  #    ####   #     #    #     #  #  #  #  #  #   #     ##    ##   ##     #    #     #  #  #  #   #     #    #     #  #  #  #   #    #  #  # ##   ##   ##      ##
-//  #    ####  ###     ##   ##   #  #  #  #  ###   ###    ##   #      ##     ##  ####  #  #   ##     ##  ###    ##    ##   #  #  ###   #  #   # #  #      ##   ###
-//                                           #                  ###                                                                                 ###
-TwitchApi.prototype.getEmoticonImages = function(callback) {
-    this._executeRequest(
-        {
-            method: "GET",
-            path: "/chat/emoticon_images"
-        },
-        callback
-    );
-};
 
 //  #####           #     #            #
 //    #                   #            #
@@ -52,7 +36,7 @@ class Twitch extends Chat {
 
         this.settings = settings;
 
-        this.api = new TwitchApi(settings.twitch);
+        this.api = new TwitchHelix(settings.twitch);
     }
 
     //                                      #             #
@@ -119,14 +103,7 @@ class Twitch extends Chat {
                 // });
             });
 
-            //  #           #     #          #            #           #                        #    # #                                               # #   #
-            //  #                 #          #            #                                   #     # #                                               # #    #
-            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #
-            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ####  # ##  ##     ##     #  #  #  #  # ##          #
-            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  ##      ##     ##   # ##   ##   ##            #
-            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #
-            //                                                                                                                            ###
-            twitch.tmi.on("message", (channel, userstate, text, self) => {
+            const handleMessage = (event, channel, userstate, text, self) => {
                 const span = $("<span></span>");
 
                 if (userstate.emotes) {
@@ -137,13 +114,14 @@ class Twitch extends Chat {
                         const {emotes: {[id]: ranges}} = userstate;
 
                         ranges.forEach((range) => {
-                            var matches = rangeRegex.exec(range);
+                            const matches = rangeRegex.exec(range);
+
                             emotes[+matches[1]] = {start: +matches[1], end: +matches[2], id: id};
                         });
                     });
 
                     Object.keys(emotes).sort((a, b) => a - b).forEach((start) => {
-                        var emote = emotes[start];
+                        const emote = emotes[start];
 
                         if (start > lastEnd) {
                             const fragment = text.substring(lastEnd, start),
@@ -181,18 +159,31 @@ class Twitch extends Chat {
                     userstate.color = defaultColors[(userstate.username.charCodeAt(0) + userstate.username.charCodeAt(userstate.username.length - 1)) % defaultColors.length];
                 }
 
-                switch (userstate["message-type"]) {
-                    case "chat":
-                        twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
-                        break;
-                    case "whisper":
-                        twitch.emit("whisper", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
-                        break;
-                    default:
-                        console.log("WARNING: Missing message-type", channel, userstate, text, self);
-                        break;
+                if (userstate.bits) {
+
+                } else {
+                    switch (userstate["message-type"]) {
+                        case "chat":
+                            twitch.emit("message", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
+                            break;
+                        case "whisper":
+                            twitch.emit("whisper", channel, userstate.username, userstate.color, userstate["display-name"], userstate.badges, span.html(), text);
+                            break;
+                        default:
+                            console.log("WARNING: Missing message-type", channel, userstate, text, self);
+                            break;
+                    }
                 }
-            });
+            };
+
+            //  #           #     #          #            #           #                        #    # #                                               # #   #
+            //  #                 #          #            #                                   #     # #                                               # #    #
+            // ###   #  #  ##    ###    ##   ###         ###   # #   ##           ##   ###    #     # #  # #    ##    ###    ###    ###   ###   ##    # #    #
+            //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          ####  # ##  ##     ##     #  #  #  #  # ##          #
+            //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #  #  ##      ##     ##   # ##   ##   ##            #
+            //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #         #  #   ##   ###    ###     # #  #      ##          #
+            //                                                                                                                            ###
+            twitch.tmi.on("message", (channel, userstate, message, self) => handleMessage("message", channel, userstate, message, self));
 
             //  #           #     #          #            #           #                        #    # #    #          #           # #   #
             //  #                 #          #            #                                   #     # #                           # #    #
@@ -252,9 +243,7 @@ class Twitch extends Chat {
             //  #    #  #   #     #    #     #  #         #    ####   #          #  #  #  #   #          #     #  #  # ##  # ##  #  #          #
             //  #    ####   #     #    #     #  #   ##    #    #  #   #     ##   #  #  #  #   #          #     #  #  ##    ##    #             #
             //   ##  ####  ###     ##   ##   #  #   ##     ##  #  #  ###    ##    ##   #  #    #          ##   #  #   ##    ##   #            #
-            twitch.tmi.on("cheer", (channel, userstate, message) => {
-                twitch.emit("cheer", channel, userstate, message);
-            });
+            twitch.tmi.on("cheer", (channel, userstate, message) => handleMessage("message", channel, userstate, message));
 
             //  #           #     #          #            #           #                        #    # #        ##                            #            #     # #   #
             //  #                 #          #            #                                   #     # #         #                            #            #     # #    #
@@ -418,7 +407,7 @@ class Twitch extends Chat {
      * @return {bool} Whether you are authorized.
      */
     get authorized() {
-        return !!(this.accessToken);
+        return !!this.accessToken;
     }
 
     //              #    #                  #
@@ -440,24 +429,24 @@ class Twitch extends Chat {
 
             new Promise((innerResolve, innerReject) => {
                 if (username && accessToken) {
-                    api.getAuthenticatedUser(accessToken, (err, body) => {
-                        if (err) {
-                            innerReject();
-                            // TODO: Handle the error more gracefully.
-                        }
+                    api.accessToken = accessToken;
 
+                    api.sendHelixRequest("users").then((data) => {
                         twitch.accessToken = accessToken;
-                        ({name: twitch.username, display_name: twitch.displayName} = body);
+
+                        ({login: twitch.username, display_name: twitch.displayName, id: twitch.id} = data[0]);
 
                         twitch.emit("credentials", twitch.username, twitch.accessToken);
 
                         innerResolve();
+                    }).catch((err) => {
+                        innerReject(err);
                     });
                 } else {
-                    innerReject();
+                    innerReject(new Error("Not logged in."));
                 }
             }).then(resolve).catch(() => {
-                var win = new electron.remote.BrowserWindow({width: 800, height: 600, parent: electron.remote.BrowserWindow.getAllWindows().find((w) => w.getTitle() === "Hyperdrive Toolkit"), modal: true, title: "Hyperdrive Toolkit - Waiting for Twitch OAuth"});
+                let win = new electron.remote.BrowserWindow({width: 800, height: 600, parent: electron.remote.BrowserWindow.getAllWindows().find((w) => w.getTitle() === "Hyperdrive Toolkit"), modal: true, title: "Hyperdrive Toolkit - Waiting for Twitch OAuth"});
 
                 win.loadURL(`file://${__dirname}/twitch.htm`);
                 win.setMenu(null);
@@ -466,36 +455,36 @@ class Twitch extends Chat {
                     win.show();
                 });
 
-                win.on("access-token", (accessToken) => {
-                    twitch.accessToken = accessToken;
-                    api.getAuthenticatedUser(twitch.accessToken, (err, body) => {
-                        if (err) {
-                            // TODO: Handle the error more gracefully.
-                        }
+                win.on("access-token", (newAccessToken) => {
+                    twitch.accessToken = newAccessToken;
+                    api.sendHelixRequest("users").then((data) => {
+                        twitch.accessToken = accessToken;
 
-                        twitch.username = body.name;
-                        twitch.displayName = body.display_name;
+                        ({login: twitch.username, display_name: twitch.displayName, id: twitch.id} = data[0]);
 
                         twitch.emit("credentials", twitch.username, twitch.accessToken);
-                    });
+                    }); // TODO: .catch((err) => {})
                 });
 
                 win.on("closed", () => {
                     win = null;
+
                     if (twitch.accessToken) {
                         resolve();
                     } else {
-                        reject();
+                        reject(new Error("Not logged in."));
                     }
                 });
 
-                electron.shell.openExternal(api.getAuthorizationUrl().replace("response_type=code", "response_type=token") + "&force_verify=true");
+                const authorizationUrl = `https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=${apiSettings.twitch.clientId}&redirect_uri=${apiSettings.twitch.redirectUri}&scope=${apiSettings.twitch.scopes.join("+")}&force_verify=true`;
+
+                electron.shell.openExternal(authorizationUrl);
             });
         });
     }
 
     //   #          #
-
+    //
     //   #    ##   ##    ###
     //   #   #  #   #    #  #
     //   #   #  #   #    #  #
@@ -598,9 +587,12 @@ class Twitch extends Chat {
     // ###   #  #   #     #    #  #  #  #
     //  #    #  #   #     #    #  #  ####
     //  #     ##   ###   ###    ##   ####
-    follow(username) {
+    follow(username, notifications) {
         // TODO: Allow user to set whether they receive notifications when the channel goes live.
-        return this.api.userFollowChannel(this.username, username, this.accessToken);
+        const twitch = this,
+            {api} = this;
+
+        return api.getTwitchUserByName(username).then((data) => data.id).then((id) => api.sendApiRequest(`users/${twitch.id}/follows/channel/${id}`, {requestOptions: {json: {notifications: !!notifications}}, method: "put", api: "kraken"}));
     }
 
     //               #         ##    ##
@@ -610,7 +602,10 @@ class Twitch extends Chat {
     // #  #  #  #   #    #  #   #     #    #  #  ####
     //  ###  #  #   #     ##   ###   ###    ##   ####
     unfollow(username) {
-        return this.api.userUnfollowChannel(this.username, username, this.accessToken);
+        const twitch = this,
+            {api} = this;
+
+        return api.getTwitchUserByName(username).then((data) => data.id).then((id) => api.sendApiRequest(`users/${twitch.id}/follows/channel/${id}`, {method: "delete", api: "kraken"}));
     }
 
     //              #     ##    #
@@ -626,17 +621,21 @@ class Twitch extends Chat {
      * @return {Promise} A promise that resolves when the stream data is sent.
      */
     getStream(channel) {
-        var api = this.api;
+        const {api} = this;
 
-        return new Promise((resolve, reject) => {
-            api.getChannelStream(channel, (err, stream) => {
-                if (err) {
-                    reject(err);
-                    return;
+        return api.sendHelixRequest("streams", {
+            requestOptions: {
+                qs: {
+                    user_login: channel,
+                    type: "all"
                 }
+            }
+        }).then((streams) => {
+            if (streams && streams[0]) {
+                return streams[0];
+            }
 
-                resolve(stream.stream);
-            });
+            throw new Error("Stream is not online.");
         });
     }
 
@@ -653,17 +652,14 @@ class Twitch extends Chat {
      * @return {Promise} A promise that resolves when the channel data is sent.
      */
     getChannel(channel) {
-        var api = this.api;
+        const {api} = this;
 
-        return new Promise((resolve, reject) => {
-            api.getChannel(channel, (err, channelData) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
+        return api.getTwitchUserByName(channel).then((data) => data.id).then((id) => api.sendApiRequest(`channels/${id}`, {api: "kraken"})).then((channels) => {
+            if (channels && channels.body) {
+                return channels.body;
+            }
 
-                resolve(channelData);
-            });
+            throw new Error("Channel does not exist.");
         });
     }
 
@@ -763,23 +759,9 @@ class Twitch extends Chat {
      * @return {Promise} A promise that resolves when the status is set.
      */
     setStatus(channel, status) {
-        const twitch = this;
+        const {api} = this;
 
-        return new Promise((resolve, reject) => {
-            twitch.api.updateChannel(channel, twitch.accessToken, {channel: status}, (err, channelObj) => {
-                if (typeof channelObj === "string") {
-                    reject(new Error("Invalid channel."));
-                    return;
-                }
-
-                if (err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(channelObj);
-            });
-        });
+        return api.getTwitchUserByName(channel).then((data) => data.id).then((id) => api.sendApiRequest(`channels/${id}`, {requestOptions: {json: {channel: status}}, method: "put", api: "kraken"}));
     }
 }
 
