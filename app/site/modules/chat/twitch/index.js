@@ -1,6 +1,6 @@
 const http = require("http"),
     electron = require("electron"),
-    Tmi = require("tmi.js"),
+    TwitchJs = require("twitch-js"),
     TwitchHelix = require("twitch-helix"),
     Chat = require("../../../js/base/chat"),
     rangeRegex = /^([0-9]+)-([0-9]+)$/,
@@ -84,7 +84,7 @@ class Twitch extends Chat {
                 password: `oauth:${twitch.accessToken}`
             };
 
-            twitch.tmi = new Tmi.client(settings);
+            twitch.tmi = new TwitchJs.client(settings);
 
             // TODO: See what events we want to forward. https://docs.tmijs.org/v1.1.2/Events.html#join
 

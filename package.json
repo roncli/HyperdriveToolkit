@@ -18,16 +18,16 @@
         "url": "https://github.com/roncli/HyperdriveToolkit.git"
     },
     "devDependencies": {
-        "electron": "1.7.10",
-        "electron-builder": "19.49.0"
+        "electron": "4.0.1",
+        "electron-builder": "20.38.4"
     },
     "engines": {
-        "node": ">=8.0.0"
+        "node": ">=10.0.0"
     },
     "productName": "HyperdriveToolkit",
     "build": {
         "appId": "com.electron.hyperdrivetoolkit",
-        "copyright": "©2017 roncli Productions",
+        "copyright": "©2017-2019 roncli Productions",
         "productName": "HyperdriveToolkit",
         "compression": "maximum",
         "nsis": {

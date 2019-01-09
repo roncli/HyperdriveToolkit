@@ -1,3 +1,5 @@
+// TODO: Start and stop the electron server somewhere else.
+
 const electron = require("electron"),
     express = require("express");
 
