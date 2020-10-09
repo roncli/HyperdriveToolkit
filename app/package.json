@@ -18,7 +18,7 @@
         "url": "https://github.com/roncli/HyperdriveToolkit.git"
     },
     "dependencies": {
-        "bootstrap": "4.2.1",
+        "bootstrap": "4.5.2",
         "bootstrap-colorpicker": "3.0.3",
         "express": "4.16.4",
         "iconv-lite": "0.4.24",
